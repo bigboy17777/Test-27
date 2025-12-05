@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Idle Food Empire — Mini Clone</title>
+<style>
+  :root {
+    --bg:#0f1720; --panel:#0b1220; --accent:#66d9a6; --muted:#93a3b4; --card:#0d1620;
+  }
+  body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial;background:linear-gradient(180deg,#07111a 0%, #081727 100%);color:#dbe9ef}
+  header{padding:18px 20px;background:linear-gradient(90deg, rgba(0,0,0,.2), rgba(255,255,255,.02));display:flex;align-items:center;gap:14px;box-shadow:0 2px 10px rgba(0,0,0,.4)}
+  h1{font-size:18px;margin:0;color:var(--accent)}
+  .container{display:flex;gap:18px;padding:18px;flex-wrap:wrap}
+  .left{flex:1 1 560px;min-width:320px}
+  .right{width:320px;min-width:260px}
+  .panel{background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(0,0,0,.02));padding:12px;border-radius:8px;margin-bottom:12px;box-shadow:0 6px 18px rgba(2,6,12,.6)}
+  .floors{display:grid;gap:10px}
+  .floor{display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--card);border-radius:8px}
+  .floor .leftcol{display:flex;gap:12px;align-items:center}
+  .floor .icon{width:56px;height:56px;border-radius:8px;background:linear-gradient(135deg,#123 0%, #235 100%);display:flex;align-items:center;justify-content:center;font-weight:700}
+  .btn{background:var(--accent);color:#042226;border:none;padding:8px 10px;border-radius:6px;cursor:pointer}
+  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,.06);color:var(--muted)}
+  .small{font-size:13px;color:var(--muted)}
+  .stats{display:flex;flex-direction:column;gap:8px}
+  .row{display:flex;justify-content:space-between;align-items:center}
+  .big-num{font-size:20px;color:#fff;font-weight:700}
+  .upgrades{display:flex;gap:8px;flex-wrap:wrap}
+  .upg{flex:1 1 140px;padding:10px;background:#07121b;border-radius:6px;text-align:center}
+  footer{padding:18px;text-align:center;color:var(--muted);font-size:13px}
+  .muted{color:var(--muted)}
+  .gold{color:#ffd27a}
+</style>
+</head>
+<body>
+<header>
+  <div style="width:44px;height:44;border-radius:10px;background:linear-gradient(45deg,#072,#289);display:flex;align-items:center;justify-content:center;color:#021;font-weight:700">IFE</div>
+  <div>
+    <h1>Idle Food Empire — Mini Clone</h1>
+    <div class="small muted">Vertical farm idle clicker — unlock floors, hire managers, upgrade, sell to grow faster</div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="left">
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div>
+          <div class="big-num" id="moneyDisplay">$0</div>
+          <div class="small muted">Cash • Income/sec: <span id="incomeDisplay">$0</span></div>
+        </div>
+        <div style="text-align:right">
+          <div class="small muted">Prestige multiplier</div>
+          <div class="gold" id="prestigeDisplay">x1</div>
+        </div>
+      </div>
+
+      <div class="floors" id="floors"></div>
+    </div>
+
+    <div class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <strong>Business Controls</strong>
+        <div class="small muted">Save & restart with bonus</div>
+      </div>
+      <div class="row" style="margin-bottom:8px">
+        <button class="btn" id="sellBtn">Sell Business (Prestige)</button>
+        <div class="small">You will restart and gain prestige.</div>
+      </div>
+
+      <div style="display:flex;gap:8px">
+        <div class="upg">
+          <div class="small muted">Warehouse</div>
+          <div id="warehouseLevel">Level 0</div>
+          <div class="small">Boosts all floor output</div>
+          <button class="btn" id="buyWarehouse">Buy ($200)</button>
+        </div>
+
+        <div class="upg">
+          <div class="small muted">Elevator</div>
+          <div id="elevatorLevel">Level 0</div>
+          <div class="small">Speeds production (lower timer)</div>
+          <button class="btn" id="buyElevator">Buy ($150)</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="display:flex;gap:12px;align-items:center;justify-content:space-between">
+      <div>
+        <div class="small muted">Tips</div>
+        <div>Unlock floors, then hire managers to automate. Selling gives permanent bonus to earnings.</div>
+      </div>
+      <div style="text-align:right">
+        <div class="small muted">Controls</div>
+        <div class="small">Click "Upgrade" to increase workers. Managers automate floor production.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="panel">
+      <div class="small muted">Game Stats</div>
+      <div class="row"><div>Floors unlocked</div><div id="floorsUnlocked">0</div></div>
+      <div class="row"><div>Managers hired</div><div id="managersHired">0</div></div>
+      <div class="row"><div>Total prestige</div><div id="prestigePoints">0</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="small muted">Quick Actions</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+        <button class="btn ghost" id="fastSim">Simulate +1 min</button>
+        <button class="btn ghost" id="resetAll">Reset (no prestige)</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="small muted">About</div>
+      <div style="font-size:13px;margin-top:6px">This is an original simple clone inspired by the Idle Food Empire page: vertical farm floors, worker upgrades, managers & prestige. Play for fun.</div>
+      <div style="font-size:12px;margin-top:8px" class="muted">Source description referenced: mortgagecalculator.org.</div>
+    </div>
+  </div>
+</div>
+
+<footer class="panel">
+  <div style="max-width:900px;margin:0 auto">Made as a compact playable clone — simplified mechanics for quick testing. Save the file and open locally to play.</div>
+</footer>
+
+<script>
+// ---- Game data and state ----
+const config = {
+  baseUnlockCost: 50,
+  baseFloorIncome: 1,       // base income per cycle
+  baseWorkerUpgradeCost: 25,
+  workerUpgradeMultiplier: 1.5,
+  elevatorBaseSpeedMs: 4000, // base time per cycle in ms
+  warehouseBoostBase: 0.10, // 10% per level
+  prestige
