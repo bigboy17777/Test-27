@@ -2,108 +2,90 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Offline Video Player</title>
+<title>Local Video Player</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: #0f0f0f;
-    color: #fff;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-}
-
-h1 {
-    margin-bottom: 10px;
-}
-
-.container {
-    max-width: 900px;
-    width: 100%;
+    background:#0e0e0e;
+    color:white;
+    font-family:Arial, sans-serif;
+    padding:20px;
+    text-align:center;
 }
 
 input, button {
-    width: 100%;
-    padding: 10px;
-    margin: 8px 0;
-    font-size: 16px;
+    width:100%;
+    max-width:700px;
+    padding:10px;
+    margin:6px 0;
+    font-size:16px;
 }
 
 button {
-    background: #ff0000;
-    border: none;
-    color: white;
-    cursor: pointer;
-}
-
-button:hover {
-    background: #cc0000;
+    background:#ff0000;
+    color:white;
+    border:none;
+    cursor:pointer;
 }
 
 video, iframe {
-    width: 100%;
-    height: 500px;
-    background: black;
-    margin-top: 10px;
+    width:100%;
+    max-width:900px;
+    height:500px;
+    background:black;
+    margin-top:10px;
 }
 </style>
 </head>
 
 <body>
 
-<h1>Local Video Player</h1>
-<p>Play YouTube or MP4 files directly from this HTML file.</p>
+<h2>Offline / Local Video Player</h2>
 
-<div class="container">
+<input id="yt" placeholder="Paste YouTube link here">
+<button onclick="playYT()">Play YouTube</button>
 
-    <!-- YouTube -->
-    <input type="text" id="ytLink" placeholder="Paste YouTube link here">
-    <button onclick="playYouTube()">Play YouTube Video</button>
+<iframe id="ytFrame"
+        allow="autoplay; encrypted-media"
+        allowfullscreen></iframe>
 
-    <iframe id="ytPlayer" allowfullscreen></iframe>
+<hr>
 
-    <!-- MP4 -->
-    <input type="file" accept="video/mp4" onchange="playMP4(this)">
-    <video id="mp4Player" controls></video>
-
-</div>
+<input type="file" accept="video/mp4" onchange="playMP4(this)">
+<video id="mp4" controls></video>
 
 <script>
-function playYouTube() {
-    const link = document.getElementById("ytLink").value.trim();
-    let videoId = "";
+function extractID(url) {
+    const reg = /(?:v=|\/)([0-9A-Za-z_-]{11})/;
+    const match = url.match(reg);
+    return match ? match[1] : null;
+}
 
-    if (link.includes("youtu.be/")) {
-        videoId = link.split("youtu.be/")[1];
-    } else if (link.includes("v=")) {
-        videoId = link.split("v=")[1].split("&")[0];
-    }
+function playYT() {
+    const url = document.getElementById("yt").value;
+    const id = extractID(url);
 
-    if (!videoId) {
+    if (!id) {
         alert("Invalid YouTube link");
         return;
     }
 
-    document.getElementById("mp4Player").pause();
-    document.getElementById("mp4Player").src = "";
+    document.getElementById("mp4").pause();
+    document.getElementById("mp4").src = "";
 
-    document.getElementById("ytPlayer").src =
-        "https://www.youtube.com/embed/" + videoId;
+    document.getElementById("ytFrame").src =
+        "https://www.youtube-nocookie.com/embed/" + id;
 }
 
 function playMP4(input) {
     const file = input.files[0];
     if (!file) return;
 
-    const video = document.getElementById("mp4Player");
-    const url = URL.createObjectURL(file);
+    document.getElementById("ytFrame").src = "";
 
-    document.getElementById("ytPlayer").src = "";
-    video.src = url;
+    const video = document.getElementById("mp4");
+    video.src = URL.createObjectURL(file);
     video.play();
 }
 </script>
