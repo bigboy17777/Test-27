@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Video URL Converter MVP</title>
+
+<style>
+body {
+    background: #111;
+    color: white;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding-top: 100px;
+}
+
+.container {
+    width: 500px;
+    margin: auto;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 5px;
+    border: none;
+    margin-bottom: 10px;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    background: #ff3c3c;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #cc0000;
+}
+
+.result {
+    margin-top: 30px;
+}
+
+iframe {
+    margin-top: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>Minimal Video Link Converter</h1>
+
+    <input type="text" id="videoUrl" placeholder="Paste video URL here">
+    <button onclick="convert()">Convert</button>
+
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+function extractVideoID(url) {
+    const regex = /(?:v=|\/)([0-9A-Za-z_-]{11})/;
+    const match = url.match(regex);
+    return match ? match[1] : null;
+}
+
+function convert() {
+    const url = document.getElementById("videoUrl").value;
+    const resultDiv = document.getElementById("result");
+    resultDiv.innerHTML = "";
+
+    const videoID = extractVideoID(url);
+
+    if (!videoID) {
+        resultDiv.innerHTML = "<p>Invalid video URL</p>";
+        return;
+    }
+
+    const embedLink = "https://www.youtube.com/embed/" + videoID;
+
+    resultDiv.innerHTML = `
+        <p>Embed Link:</p>
+        <input type="text" value="${embedLink}" readonly>
+        <iframe width="400" height="250" src="${embedLink}" frameborder="0" allowfullscreen></iframe>
+    `;
+}
+</script>
+
+</body>
+</html>
