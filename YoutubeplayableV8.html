@@ -1,0 +1,137 @@
+from flask import Flask, request, Response
+import requests
+import subprocess
+import uuid
+import os
+
+app = Flask(__name__)
+
+DOWNLOAD_FOLDER = "downloads"
+os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
+
+HTML_PAGE = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Local Video Converter</title>
+    <style>
+        body {
+            background:#111;
+            color:white;
+            font-family:Arial;
+            text-align:center;
+            padding-top:60px;
+        }
+        input {
+            width:400px;
+            padding:10px;
+            border-radius:5px;
+            border:none;
+        }
+        button {
+            padding:10px 20px;
+            border:none;
+            background:#ff3c3c;
+            color:white;
+            border-radius:5px;
+            cursor:pointer;
+        }
+        button:hover { background:#cc0000; }
+        video { margin-top:30px; max-width:600px; }
+        a { color:#00ffcc; display:block; margin-top:15px; }
+    </style>
+</head>
+<body>
+
+<h1>Local Video → MP3 Converter</h1>
+
+<input type="text" id="urlInput" placeholder="Paste direct video file URL (mp4, mov...)">
+<button onclick="processVideo()">Convert</button>
+
+<div id="player"></div>
+<div id="download"></div>
+
+<script>
+function processVideo() {
+    const url = document.getElementById("urlInput").value;
+
+    if (!url) {
+        alert("Please enter a URL.");
+        return;
+    }
+
+    // Show video locally
+    document.getElementById("player").innerHTML =
+        `<video controls src="${url}"></video>`;
+
+    // Request conversion
+    fetch("/convert?url=" + encodeURIComponent(url))
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                document.getElementById("download").innerHTML = data.error;
+            } else {
+                document.getElementById("download").innerHTML =
+                    `<a href="${data.download}" download>Download MP3</a>`;
+            }
+        });
+}
+</script>
+
+</body>
+</html>
+"""
+
+@app.route("/")
+def home():
+    return HTML_PAGE
+
+@app.route("/convert")
+def convert():
+    video_url = request.args.get("url")
+
+    if not video_url:
+        return {"error": "No URL provided"}
+
+    try:
+        # Download video temporarily
+        response = requests.get(video_url, stream=True, timeout=15)
+        temp_id = str(uuid.uuid4())
+        input_path = os.path.join(DOWNLOAD_FOLDER, temp_id + ".mp4")
+
+        with open(input_path, "wb") as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                f.write(chunk)
+
+        # Convert to MP3
+        output_path = os.path.join(DOWNLOAD_FOLDER, temp_id + ".mp3")
+
+        subprocess.run([
+            "ffmpeg",
+            "-i", input_path,
+            "-q:a", "0",
+            "-map", "a",
+            output_path
+        ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        return {"download": f"/download/{temp_id}.mp3"}
+
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.route("/download/<filename>")
+def download_file(filename):
+    file_path = os.path.join(DOWNLOAD_FOLDER, filename)
+    if os.path.exists(file_path):
+        with open(file_path, "rb") as f:
+            return Response(
+                f.read(),
+                headers={
+                    "Content-Disposition": f"attachment; filename={filename}"
+                },
+                content_type="audio/mpeg"
+            )
+    return "File not found", 404
+
+if __name__ == "__main__":
+    app.run(host="127.0.0.1", port=5000, debug=True)
