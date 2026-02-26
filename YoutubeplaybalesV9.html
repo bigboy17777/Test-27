@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>YouTube Embed Page Generator</title>
+
+<style>
+body {
+    background:#111;
+    color:white;
+    font-family:Arial, sans-serif;
+    text-align:center;
+    padding-top:60px;
+}
+
+input {
+    width:65%;
+    padding:12px;
+    border-radius:6px;
+    border:none;
+    font-size:16px;
+}
+
+button {
+    padding:12px 20px;
+    margin-top:15px;
+    border:none;
+    border-radius:6px;
+    background:#ff3c3c;
+    color:white;
+    font-size:16px;
+    cursor:pointer;
+}
+
+button:hover {
+    background:#cc0000;
+}
+
+iframe {
+    margin-top:40px;
+    width:80%;
+    max-width:900px;
+    height:500px;
+    border-radius:8px;
+}
+
+textarea {
+    width:80%;
+    max-width:900px;
+    height:160px;
+    margin-top:20px;
+    padding:10px;
+    border-radius:6px;
+    border:none;
+}
+</style>
+</head>
+
+<body>
+
+<h2>YouTube Link → Embedded HTML Page</h2>
+
+<input type="text" id="ytURL" placeholder="Paste YouTube URL here">
+<br>
+<button onclick="convert()">Convert</button>
+
+<div id="videoContainer"></div>
+<div id="exportContainer"></div>
+
+<script>
+function extractVideoID(url) {
+    const regExp = /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([^&]+)/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+}
+
+function convert() {
+    const url = document.getElementById("ytURL").value.trim();
+    const videoID = extractVideoID(url);
+
+    if (!videoID) {
+        alert("Invalid YouTube URL.");
+        return;
+    }
+
+    const embedURL = "https://www.youtube.com/embed/" + videoID;
+
+    // Show video locally
+    document.getElementById("videoContainer").innerHTML =
+        `<iframe src="${embedURL}" frameborder="0" allowfullscreen></iframe>`;
+
+    // Create full standalone HTML page
+    const fullHTML = `
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Embedded YouTube Video</title>
+<style>
+body { margin:0; background:#000; display:flex; justify-content:center; align-items:center; height:100vh; }
+iframe { width:90%; max-width:960px; height:540px; }
+</style>
+</head>
+<body>
+<iframe src="${embedURL}" frameborder="0" allowfullscreen></iframe>
+</body>
+</html>`;
+
+    document.getElementById("exportContainer").innerHTML =
+        `<h3>Generated HTML Embed Page</h3>
+         <textarea readonly>${fullHTML}</textarea>
+         <br>
+         <button onclick="downloadHTML()">Download HTML File</button>`;
+}
+
+function downloadHTML() {
+    const content = document.querySelector("textarea").value;
+    const blob = new Blob([content], {type: "text/html"});
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "embedded-video.html";
+    a.click();
+
+    URL.revokeObjectURL(url);
+}
+</script>
+
+</body>
+</html>
