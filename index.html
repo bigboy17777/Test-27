@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TristanProxy - Tristan is a Bum</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700&display=swap');
+
+    * { box-sizing: border-box; }
+
+    body {
+      background: #0a0a0f;
+      color: #00ff88;
+      font-family: 'Share Tech Mono', monospace;
+      overflow-x: hidden;
+    }
+
+    .orbitron { font-family: 'Orbitron', sans-serif; }
+
+    /* Marquee */
+    .marquee-wrapper {
+      background: #ff0033;
+      overflow: hidden;
+      white-space: nowrap;
+      padding: 6px 0;
+    }
+    .marquee-track {
+      display: inline-block;
+      animation: marquee 18s linear infinite;
+    }
+    @keyframes marquee {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* Glowing title */
+    .glow-title {
+      text-shadow:
+        0 0 8px #ff0033,
+        0 0 20px #ff0033,
+        0 0 50px #ff0033,
+        0 0 100px #ff0033;
+      animation: pulse-glow 2s ease-in-out infinite alternate;
+    }
+    @keyframes pulse-glow {
+      from { text-shadow: 0 0 8px #ff0033, 0 0 20px #ff0033, 0 0 50px #ff0033; }
+      to   { text-shadow: 0 0 16px #ff0033, 0 0 40px #ff0033, 0 0 100px #ff0033, 0 0 200px #ff6677; }
+    }
+
+    /* Proxy panel */
+    .panel {
+      background: rgba(0,255,136,0.04);
+      border: 1px solid rgba(0,255,136,0.2);
+      border-radius: 12px;
+    }
+
+    .url-input {
+      background: #0d1117;
+      border: 1.5px solid #00ff88;
+      color: #00ff88;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 15px;
+      outline: none;
+      width: 100%;
+      transition: box-shadow 0.2s;
+    }
+    .url-input:focus {
+      box-shadow: 0 0 0 3px rgba(0,255,136,0.25);
+    }
+    .url-input::placeholder { color: #3a7a5a; }
+
+    .btn-launch {
+      background: linear-gradient(135deg, #00ff88, #00cc66);
+      color: #0a0a0f;
+      font-weight: 900;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 13px;
+      padding: 10px 22px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+      white-space: nowrap;
+    }
+    .btn-launch:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(0,255,136,0.5);
+    }
+
+    .quick-btn {
+      background: rgba(0,255,136,0.08);
+      border: 1px solid rgba(0,255,136,0.3);
+      color: #00ff88;
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .quick-btn:hover {
+      background: rgba(0,255,136,0.2);
+      box-shadow: 0 0 10px rgba(0,255,136,0.3);
+    }
+
+    /* Proxy mode tabs */
+    .mode-tab {
+      padding: 6px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      border: 1px solid rgba(0,255,136,0.3);
+      background: transparent;
+      color: #00ff88;
+      font-family: 'Share Tech Mono', monospace;
+      transition: all 0.15s;
+    }
+    .mode-tab.active {
+      background: #00ff88;
+      color: #0a0a0f;
+      font-weight: bold;
+    }
+
+    /* Iframe container */
+    #proxy-frame-container {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 9999;
+      background: #0a0a0f;
+      flex-direction: column;
+    }
+    #proxy-frame-container.visible {
+      display: flex;
+    }
+
+    .frame-toolbar {
+      background: #0d1117;
+      border-bottom: 1px solid rgba(0,255,136,0.3);
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .frame-url-bar {
+      flex: 1;
+      background: #0a0a0f;
+      border: 1px solid rgba(0,255,136,0.4);
+      color: #00ff88;
+      border-radius: 6px;
+      padding: 6px 12px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .close-btn {
+      background: #ff0033;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 13px;
+      transition: opacity 0.15s;
+    }
+    .close-btn:hover { opacity: 0.8; }
+
+    #proxy-iframe {
+      flex: 1;
+      border: none;
+      width: 100%;
+      background: white;
+    }
+
+    /* Terminal log */
+    .terminal {
+      background: #050508;
+      border: 1px solid rgba(0,255,136,0.15);
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 12px;
+      height: 120px;
+      overflow-y: auto;
+      color: #00cc66;
+    }
+    .terminal .line-err  { color: #ff4455; }
+    .terminal .line-warn { color: #ffcc00; }
+    .terminal .line-ok   { color: #00ff88; }
+
+    /* Loading overlay inside frame */
+    #loading-overlay {
+      display: none;
+      position: absolute;
+      inset: 0;
+      background: #0a0a0f;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 16px;
+      z-index: 10;
+    }
+    #loading-overlay.visible { display: flex; }
+
+    .spinner {
+      width: 48px; height: 48px;
+      border: 4px solid rgba(0,255,136,0.2);
+      border-top-color: #00ff88;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Status badge */
+    .status-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      background: #00ff88;
+      box-shadow: 0 0 8px #00ff88;
+      animation: blink 1.5s ease-in-out infinite;
+    }
+    @keyframes blink {
+      0%,100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* Bum card */
+    .bum-card {
+      border: 2px solid #ff0033;
+      box-shadow: 0 0 24px rgba(255,0,51,0.4), inset 0 0 40px rgba(255,0,51,0.05);
+      border-radius: 12px;
+      background: rgba(255,0,51,0.05);
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0a0a0f; }
+    ::-webkit-scrollbar-thumb { background: #00ff8866; border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- ===== MARQUEE ===== -->
+<div class="marquee-wrapper">
+  <span class="marquee-track text-white font-bold text-sm tracking-widest">
+    🚨 TRISTAN IS A BUM 🚨 &nbsp;&nbsp;&nbsp; ⚠️ CERTIFIED HOBO STATUS ⚠️ &nbsp;&nbsp;&nbsp; 🗑️ OFFICIAL BUM ALERT 🗑️ &nbsp;&nbsp;&nbsp; 🚨 TRISTAN IS A BUM 🚨 &nbsp;&nbsp;&nbsp; ⚠️ CERTIFIED HOBO STATUS ⚠️ &nbsp;&nbsp;&nbsp; 🗑️ OFFICIAL BUM ALERT 🗑️ &nbsp;&nbsp;&nbsp; 🚨 TRISTAN IS A BUM 🚨 &nbsp;&nbsp;&nbsp; ⚠️ CERTIFIED HOBO STATUS ⚠️ &nbsp;&nbsp;&nbsp; 🗑️ OFFICIAL BUM ALERT 🗑️ &nbsp;&nbsp;&nbsp; 🚨 TRISTAN IS A BUM 🚨 &nbsp;&nbsp;&nbsp; ⚠️ CERTIFIED HOBO STATUS ⚠️ &nbsp;&nbsp;&nbsp; 🗑️ OFFICIAL BUM ALERT 🗑️ &nbsp;&nbsp;&nbsp;
+  </span>
+</div>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div class="max-w-4xl mx-auto px-4 py-8">
+
+  <!-- Title -->
+  <div class="text-center mb-8">
+    <h1 class="orbitron glow-title text-4xl md:text-6xl font-black text-red-500 mb-2 uppercase tracking-widest">
+      TRISTAN IS A BUM
+    </h1>
+    <p class="text-green-400 text-sm tracking-widest opacity-70">[ OFFICIAL CERTIFIED NOTICE — EST. ALWAYS ]</p>
+    <div class="flex items-center justify-center gap-2 mt-2">
+      <span class="status-dot"></span>
+      <span class="text-xs text-green-500 tracking-wider">PROXY ONLINE — ALL SYSTEMS GO</span>
+    </div>
+  </div>
+
+  <!-- Bum Certificate -->
+  <div class="bum-card p-5 mb-8 text-center">
+    <p class="text-red-400 orbitron font-bold text-lg mb-1">🏆 OFFICIAL CERTIFICATE OF BUMHOOD 🏆</p>
+    <p class="text-red-300 text-sm mb-3">This hereby certifies that <strong class="text-white">TRISTAN</strong> is, was, and always will be a certified, verified, notarized <strong class="text-red-400">BUM</strong>.</p>
+    <div class="flex justify-center gap-6 text-xs text-red-400">
+      <span>✅ Certified</span>
+      <span>✅ Verified</span>
+      <span>✅ Stamped</span>
+      <span>✅ Notarized</span>
+      <span>✅ Undeniable</span>
+    </div>
+  </div>
+
+  <!-- PROXY PANEL -->
+  <div class="panel p-6 mb-6">
+    <div class="flex items-center gap-3 mb-4">
+      <span class="orbitron text-green-400 font-bold text-sm tracking-widest uppercase">🌐 TristanProxy v2.0</span>
+      <span class="text-xs text-green-700 border border-green-900 rounded px-2 py-0.5">CORS Bypass Engine</span>
+    </div>
+
+    <!-- Mode selector -->
+    <div class="flex gap-2 mb-4">
+      <button class="mode-tab active" id="tab-inline" onclick="setMode('inline')">📺 Inline (Local)</button>
+      <button class="mode-tab" id="tab-cors" onclick="setMode('cors')">🔀 CORS Proxy</button>
+      <button class="mode-tab" id="tab-newtab" onclick="setMode('newtab')">🔗 New Tab</button>
+    </div>
+
+    <!-- Mode descriptions -->
+    <div id="desc-inline" class="mode-desc text-xs text-green-700 mb-3">📺 <strong class="text-green-500">Inline:</strong> Loads the site in a fullscreen iframe overlay directly. Works best for sites that allow embedding.</div>
+    <div id="desc-cors" class="mode-desc text-xs text-green-700 mb-3" style="display:none">🔀 <strong class="text-green-500">CORS Proxy:</strong> Routes the URL through a public CORS proxy (allorigins.win) to fetch and render the raw HTML locally inside an iframe — bypasses most CORS restrictions.</div>
+    <div id="desc-newtab" class="mode-desc text-xs text-green-700 mb-3" style="display:none">🔗 <strong class="text-green-500">New Tab:</strong> Opens the site in a new browser tab. Most reliable for any site.</div>
+
+    <!-- URL bar -->
+    <div class="flex gap-3 mb-4">
+      <input
+        id="url-input"
+        class="url-input"
+        type="text"
+        placeholder="Enter URL — e.g. https://wikipedia.org"
+        onkeydown="if(event.key==='Enter') launchProxy()"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <button class="btn-launch" onclick="launchProxy()">▶ LAUNCH</button>
+    </div>
+
+    <!-- Quick access -->
+    <div class="mb-4">
+      <p class="text-xs text-green-700 mb-2 uppercase tracking-widest">Quick Access</p>
+      <div class="flex flex-wrap gap-2">
+        <button class="quick-btn" onclick="quickLoad('https://wikipedia.org')">Wikipedia</button>
+        <button class="quick-btn" onclick="quickLoad('https://github.com')">GitHub</button>
+        <button class="quick-btn" onclick="quickLoad('https://old.reddit.com')">Reddit</button>
+        <button class="quick-btn" onclick="quickLoad('https://news.ycombinator.com')">Hacker News</button>
+        <button class="quick-btn" onclick="quickLoad('https://example.com')">Example.com</button>
+        <button class="quick-btn" onclick="quickLoad('https://archive.org')">Archive.org</button>
+      </div>
+    </div>
+
+    <!-- Terminal log -->
+    <div>
+      <p class="text-xs text-green-700 mb-1 uppercase tracking-widest">// Proxy Log</p>
+      <div class="terminal" id="terminal"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== FULLSCREEN FRAME OVERLAY ===== -->
+<div id="proxy-frame-container">
+  <!-- Toolbar -->
+  <div class="frame-toolbar">
+    <button class="close-btn" onclick="closeFrame()">✕ Close</button>
+    <input class="frame-url-bar" id="frame-url-bar" type="text" value="" placeholder="URL" readonly />
+    <button class="quick-btn" onclick="reloadFrame()" title="Reload">↻ Reload</button>
+    <button class="quick-btn" onclick="openCurrentInNewTab()" title="Open in new tab">↗ New Tab</button>
+  </div>
+
+  <!-- Loading overlay -->
+  <div style="position:relative; flex:1; display:flex; flex-direction:column;">
+    <div id="loading-overlay" class="visible">
+      <div class="spinner"></div>
+      <p class="text-green-400 text-sm tracking-widest animate-pulse">ROUTING THROUGH PROXY...</p>
+    </div>
+    <iframe id="proxy-iframe" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation"></iframe>
+  </div>
+</div>
+
+<script>
+  // ─── State ───────────────────────────────────────────────────────────────────
+  let currentMode = 'inline';
+  let currentURL  = '';
+
+  // ─── Terminal ────────────────────────────────────────────────────────────────
+  const terminal = document.getElementById('terminal');
+
+  function log(msg, type = 'ok') {
+    const line = document.createElement('div');
+    line.className = 'line-' + type;
+    const ts = new Date().toLocaleTimeString();
+    line.textContent = `[${ts}] ${msg}`;
+    terminal.appendChild(line);
+    terminal.scrollTop = terminal.scrollHeight;
+  }
+
+  // Boot messages
+  (function bootLog() {
+    const msgs = [
+      ['Initializing TristanProxy v2.0...', 'ok'],
+      ['Loading CORS bypass engine...', 'ok'],
+      ['Tristan is a bum — fact logged.', 'warn'],
+      ['All proxy nodes online.', 'ok'],
+      ['Ready to route requests.', 'ok'],
+    ];
+    msgs.forEach(([m, t], i) => setTimeout(() => log(m, t), i * 400));
+  })();
+
+  // ─── Mode selector ───────────────────────────────────────────────────────────
+  function setMode(mode) {
+    currentMode = mode;
+    ['inline','cors','newtab'].forEach(m => {
+      document.getElementById('tab-' + m).classList.toggle('active', m === mode);
+      document.getElementById('desc-' + m).style.display = m === mode ? 'block' : 'none';
+    });
+    log(`Mode switched to: ${mode.toUpperCase()}`, 'ok');
+  }
+
+  // ─── Quick load ──────────────────────────────────────────────────────────────
+  function quickLoad(url) {
+    document.getElementById('url-input').value = url;
+    launchProxy();
+  }
+
+  // ─── Normalize URL ───────────────────────────────────────────────────────────
+  function normalizeURL(raw) {
+    raw = raw.trim();
+    if (!raw) return null;
+    if (!/^https?:\/\//i.test(raw)) raw = 'https://' + raw;
+    try { return new URL(raw).href; }
+    catch { return null; }
+  }
+
+  // ─── Launch ──────────────────────────────────────────────────────────────────
+  function launchProxy() {
+    const raw = document.getElementById('url-input').value;
+    const url = normalizeURL(raw);
+
+    if (!url) {
+      log('ERROR: Invalid URL entered.', 'err');
+      return;
+    }
+
+    currentURL = url;
+    log(`Target: ${url}`, 'ok');
+
+    if (currentMode === 'newtab') {
+      log('Opening in new tab...', 'ok');
+      window.open(url, '_blank');
+      return;
+    }
+
+    if (currentMode === 'cors') {
+      // Route through allorigins CORS proxy — fetches raw HTML
+      const proxyURL = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+      log(`CORS proxy → allorigins.win`, 'warn');
+      log(`Fetching: ${url}`, 'ok');
+      fetchAndRender(url, proxyURL);
+      return;
+    }
+
+    // Inline mode — direct iframe
+    log(`Loading inline iframe: ${url}`, 'ok');
+    openFrame(url);
+  }
+
+  // ─── Fetch & Render (CORS mode) ──────────────────────────────────────────────
+  async function fetchAndRender(originalURL, proxyURL) {
+    openFrameLoading();
+
+    try {
+      log('Sending request through CORS proxy...', 'warn');
+      const res = await fetch(proxyURL);
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      let html = await res.text();
+
+      // Rewrite relative URLs to absolute so assets can load
+      html = rewriteHTML(html, originalURL);
+
+      log('Response received — injecting into frame...', 'ok');
+
+      const iframe = document.getElementById('proxy-iframe');
+      const doc = iframe.contentDocument || iframe.contentWindow.document;
+      doc.open();
+      doc.write(html);
+      doc.close();
+
+      hideLoading();
+      log('✅ Page loaded via CORS proxy.', 'ok');
+      document.getElementById('frame-url-bar').value = originalURL;
+    } catch (err) {
+      hideLoading();
+      showFrameError(originalURL, err.message);
+      log(`ERROR: ${err.message}`, 'err');
+    }
+  }
+
+  // ─── Rewrite HTML so relative links/assets resolve ───────────────────────────
+  function rewriteHTML(html, baseURL) {
+    const base = new URL(baseURL);
+    // Inject a <base> tag right after <head> to resolve relative paths
+    if (/<head[\s>]/i.test(html)) {
+      html = html.replace(/(<head[^>]*>)/i, `$1<base href="${base.origin}${base.pathname}" target="_blank">`);
+    } else {
+      html = `<base href="${base.origin}/" target="_blank">` + html;
+    }
+    return html;
+  }
+
+  // ─── Frame control ───────────────────────────────────────────────────────────
+  function openFrame(url) {
+    const container = document.getElementById('proxy-frame-container');
+    const iframe    = document.getElementById('proxy-iframe');
+    const overlay   = document.getElementById('loading-overlay');
+
+    container.classList.add('visible');
+    overlay.classList.add('visible');
+    document.getElementById('frame-url-bar').value = url;
+
+    iframe.src = '';
+    setTimeout(() => {
+      iframe.src = url;
+      iframe.onload = () => {
+        hideLoading();
+        log('✅ Inline frame loaded.', 'ok');
+      };
+      iframe.onerror = () => {
+        hideLoading();
+        showFrameError(url, 'Frame refused to load (X-Frame-Options).');
+        log('Frame blocked by site — try CORS mode.', 'err');
+      };
+    }, 100);
+  }
+
+  function openFrameLoading() {
+    const container = document.getElementById('proxy-frame-container');
+    const iframe    = document.getElementById('proxy-iframe');
+    container.classList.add('visible');
+    document.getElementById('loading-overlay').classList.add('visible');
+    iframe.src = 'about:blank';
+  }
+
+  function hideLoading() {
+    document.getElementById('loading-overlay').classList.remove('visible');
+  }
+
+  function showFrameError(url, msg) {
+    const iframe = document.getElementById('proxy-iframe');
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    doc.open();
+    doc.write(`
+      <html><body style="background:#0a0a0f;color:#ff4455;font-family:monospace;padding:40px;text-align:center;">
+        <h2 style="color:#ff0033;font-size:2em;">⚠ Proxy Error</h2>
+        <p style="color:#ff6677;margin:12px 0;">${msg}</p>
+        <p style="color:#666;">Tried to load: <code style="color:#aaa;">${url}</code></p>
+        <p style="color:#555;margin-top:20px;">Try switching to <strong style="color:#00ff88">CORS Proxy</strong> mode or <strong style="color:#00ff88">New Tab</strong> mode.</p>
+        <br>
+        <p style="color:#ff0033;font-size:1.5em;">Also: Tristan is a bum 🗑️</p>
+      </body></html>
+    `);
+    doc.close();
+  }
+
+  function closeFrame() {
+    const container = document.getElementById('proxy-frame-container');
+    const iframe    = document.getElementById('proxy-iframe');
+    container.classList.remove('visible');
+    iframe.src = 'about:blank';
+    log('Frame closed.', 'ok');
+  }
+
+  function reloadFrame() {
+    if (!currentURL) return;
+    log('Reloading frame...', 'warn');
+    if (currentMode === 'cors') {
+      const proxyURL = `https://api.allorigins.win/raw?url=${encodeURIComponent(currentURL)}`;
+      fetchAndRender(currentURL, proxyURL);
+    } else {
+      openFrame(currentURL);
+    }
+  }
+
+  function openCurrentInNewTab() {
+    if (currentURL) window.open(currentURL, '_blank');
+  }
+</script>
+</body>
+</html>
