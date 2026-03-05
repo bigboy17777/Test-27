@@ -1,252 +1,973 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Elijah’s Code Editor</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elijah's Code Editor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  <!-- Prism.js Syntax Highlighting -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-one-dark.min.css" rel="stylesheet" />
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-core.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: #0d1117;
+            color: #e6edf3;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
 
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #1e1e1e;
-      color: #d4d4d4;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    header {
-      background: linear-gradient(135deg, #6e8efb, #a777e8);
-      color: white;
-      padding: 20px;
-      text-align: center;
-      font-size: 2.2rem;
-      font-weight: bold;
-      letter-spacing: 1.5px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    }
-    .controls {
-      padding: 14px;
-      background: #252526;
-      text-align: center;
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.4);
-    }
-    select, button {
-      padding: 11px 18px;
-      font-size: 15px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    select { background: #3c3c3c; color: white; }
-    button {
-      background: #6e8efb;
-      color: white;
-      font-weight: bold;
-    }
-    button:hover { background: #5a78e0; transform: translateY(-2px); }
-    button:active { transform: translateY(0); }
-    .container {
-      display: flex;
-      flex: 1;
-      overflow: hidden;
-    }
-    .editor, .output {
-      flex: 1;
-      position: relative;
-      overflow: hidden;
-    }
-    textarea, pre {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      margin: 0; padding: 20px;
-      border: none;
-      font-family: 'Fira Code', 'Consolas', monospace;
-      font-size: 16px;
-      line-height: 1.6;
-      resize: none;
-      outline: none;
-    }
-    textarea {
-      background: transparent;
-      color: transparent;
-      caret-color: #fff;
-      z-index: 2;
-    }
-    pre {
-      z-index: 1;
-      pointer-events: none;
-      overflow: auto;
-    }
-    code { display: block; }
-    .output {
-      background: white;
-    }
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-    footer {
-      text-align: center;
-      padding: 12px;
-      background: #252526;
-      font-size: 0.95rem;
-      color: #aaa;
-    }
-    .status {
-      padding: 8px;
-      background: #333;
-      text-align: center;
-      font-size: 0.9rem;
-      color: #0f0;
-    }
-  </style>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1a1f2e 0%, #0d1117 100%);
+            border-bottom: 1px solid #30363d;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .logo h1 {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .toolbar-divider {
+            width: 1px;
+            height: 24px;
+            background: #30363d;
+            margin: 0 8px;
+        }
+
+        .btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            border: 1px solid #30363d;
+            background: #21262d;
+            color: #e6edf3;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+
+        .btn:hover {
+            background: #30363d;
+            border-color: #484f58;
+        }
+
+        .btn.primary {
+            background: linear-gradient(135deg, #238636, #2ea043);
+            border-color: #238636;
+        }
+
+        .btn.primary:hover {
+            background: linear-gradient(135deg, #2ea043, #3fb950);
+        }
+
+        .btn.run {
+            background: linear-gradient(135deg, #1f6feb, #388bfd);
+            border-color: #1f6feb;
+            padding: 8px 16px;
+        }
+
+        .btn.run:hover {
+            background: linear-gradient(135deg, #388bfd, #58a6ff);
+            transform: scale(1.02);
+        }
+
+        .btn.run.pulse {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(56, 139, 253, 0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(56, 139, 253, 0); }
+        }
+
+        .btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .btn.icon-only {
+            padding: 8px;
+        }
+
+        /* Toggle Switch */
+        .toggle-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #8b949e;
+        }
+
+        .toggle {
+            position: relative;
+            width: 36px;
+            height: 20px;
+            background: #30363d;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .toggle.active {
+            background: #238636;
+        }
+
+        .toggle::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.2s;
+        }
+
+        .toggle.active::after {
+            transform: translateX(16px);
+        }
+
+        /* Main Container */
+        .container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .pane {
+            height: 100%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #left {
+            width: 50%;
+            min-width: 200px;
+        }
+
+        .pane-header {
+            background: #161b22;
+            border-bottom: 1px solid #30363d;
+            padding: 8px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #8b949e;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pane-header .lang-badge {
+            background: #30363d;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            color: #58a6ff;
+            text-transform: lowercase;
+        }
+
+        .pane-header .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: #3fb950;
+        }
+
+        .pane-header .live-indicator .dot {
+            width: 6px;
+            height: 6px;
+            background: #3fb950;
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        #divider {
+            width: 6px;
+            background: #21262d;
+            cursor: col-resize;
+            z-index: 100;
+            transition: background 0.15s;
+            flex-shrink: 0;
+        }
+
+        #divider:hover, #divider.active {
+            background: #3b82f6;
+        }
+
+        #right {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .editor-wrapper {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .editor {
+            position: absolute;
+            inset: 0;
+            resize: none;
+            border: none;
+            outline: none;
+            background: #0d1117;
+            color: #e6edf3;
+            padding: 16px;
+            padding-left: 60px;
+            font-family: 'JetBrains Mono', Menlo, Monaco, monospace;
+            font-size: 14px;
+            line-height: 22px;
+            tab-size: 2;
+            overflow: auto;
+            white-space: pre;
+            caret-color: #58a6ff;
+        }
+
+        .editor::placeholder {
+            color: #484f58;
+        }
+
+        .editor::-webkit-scrollbar {
+            width: 14px;
+            height: 14px;
+        }
+
+        .editor::-webkit-scrollbar-track {
+            background: #0d1117;
+        }
+
+        .editor::-webkit-scrollbar-thumb {
+            background: #30363d;
+            border: 3px solid #0d1117;
+            border-radius: 7px;
+        }
+
+        .editor::-webkit-scrollbar-thumb:hover {
+            background: #484f58;
+        }
+
+        .line-numbers {
+            position: absolute;
+            top: 16px;
+            left: 0;
+            width: 52px;
+            text-align: right;
+            padding-right: 16px;
+            color: #484f58;
+            font-family: 'JetBrains Mono', Menlo, Monaco, monospace;
+            font-size: 14px;
+            line-height: 22px;
+            z-index: 10;
+            pointer-events: none;
+            user-select: none;
+        }
+
+        #preview {
+            width: 100%;
+            height: 100%;
+            border: none;
+            background: white;
+        }
+
+        .code-output {
+            padding: 16px;
+            overflow: auto;
+            background: #0d1117;
+            height: 100%;
+        }
+
+        .code-output pre {
+            margin: 0;
+            font-family: 'JetBrains Mono', Menlo, Monaco, monospace;
+            font-size: 14px;
+            line-height: 22px;
+        }
+
+        .code-output::-webkit-scrollbar {
+            width: 14px;
+            height: 14px;
+        }
+
+        .code-output::-webkit-scrollbar-track {
+            background: #0d1117;
+        }
+
+        .code-output::-webkit-scrollbar-thumb {
+            background: #30363d;
+            border: 3px solid #0d1117;
+            border-radius: 7px;
+        }
+
+        .output-wrapper {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Update flash effect */
+        .output-wrapper.flash::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(56, 139, 253, 0.1);
+            z-index: 10;
+            pointer-events: none;
+            animation: flashFade 0.3s ease-out forwards;
+        }
+
+        @keyframes flashFade {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        /* Status Bar */
+        .status-bar {
+            background: #161b22;
+            border-top: 1px solid #30363d;
+            padding: 6px 16px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #8b949e;
+            flex-shrink: 0;
+        }
+
+        .status-left, .status-right {
+            display: flex;
+            gap: 16px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .status-item.success {
+            color: #3fb950;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 60px;
+            right: 20px;
+            background: #238636;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Empty state */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #484f58;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #8b949e;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        /* Keyboard shortcut hint */
+        .shortcut-hint {
+            font-size: 10px;
+            color: #6e7681;
+            background: #21262d;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 4px;
+        }
+
+    </style>
 </head>
 <body>
 
-  <header>Elijah’s Code Editor</header>
-
-  <div class="controls">
-    <select id="language">
-      <option value="html">HTML</option>
-      <option value="javascript">JavaScript</option>
-      <option value="css">CSS</option>
-      <option value="python">Python</option>
-      <option value="java">Java</option>
-      <option value="cpp">C++</option>
-      <option value="php">PHP</option>
-      <option value="json">JSON</option>
-      <option value="typescript">TypeScript</option>
-      <option value="go">Go</option>
-      <option value="rust">Rust</option>
-    </select>
-    <button onclick="runCode()">Preview Now</button>
-    <button onclick="clearCode()">Clear All</button>
-    <button onclick="copyCode()">Copy Code</button>
-  </div>
-
-  <div class="status" id="status">Auto-preview enabled • Live updates on every change!</div>
-
-  <div class="container">
-    <div class="editor">
-      <textarea id="code" spellcheck="false" placeholder="Start coding, Elijah! Every change auto-previews instantly!">
-// Elijah’s Code Editor — Instant Live Preview!
-
-alert("Hello Elijah! You're amazing!");
-
-document.body.style.cssText = `
-  font-family: Arial;
-  text-align: center;
-  padding: 50px;
-  background: linear-gradient(45deg, #6e8efb, #a777e8);
-  color: white;
-`;
-
-document.body.innerHTML = `
-  <h1>Elijah’s Code Editor</h1>
-  <p>This preview updates <strong>instantly</strong> as you type!</p>
-  <h2>Keep coding — you're doing great!</h2>
-`;
-      </textarea>
-      <pre><code id="highlight" class="language-javascript"></code></pre>
+<!-- Header -->
+<div class="header">
+    <div class="logo">
+        <div class="logo-icon">⚡</div>
+        <h1>Elijah's Code Editor</h1>
     </div>
-
-    <div class="output">
-      <iframe id="preview" sandbox="allow-scripts allow-modals allow-popups"></iframe>
+    <div class="toolbar">
+        <!-- Auto Preview Toggle -->
+        <div class="toggle-wrapper">
+            <span>Auto Preview</span>
+            <div class="toggle active" id="autoPreviewToggle" onclick="toggleAutoPreview()"></div>
+        </div>
+        
+        <div class="toolbar-divider"></div>
+        
+        <!-- Run/Preview Button -->
+        <button class="btn run" id="runBtn" onclick="runPreview()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8 5v14l11-7z"/>
+            </svg>
+            Run Preview
+            <span class="shortcut-hint">Ctrl+Enter</span>
+        </button>
+        
+        <div class="toolbar-divider"></div>
+        
+        <button class="btn" onclick="newFile()">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            New
+        </button>
+        <button class="btn" onclick="copyCode()">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+            </svg>
+            Copy
+        </button>
+        <button class="btn primary" onclick="downloadCode()">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Download
+        </button>
     </div>
-  </div>
+</div>
 
-  <footer>Made with love and power for Elijah — The Best Coder</footer>
+<!-- Main Container -->
+<div class="container">
+    <div class="pane" id="left">
+        <div class="pane-header">
+            <span>Editor</span>
+            <span class="lang-badge" id="langBadge">plaintext</span>
+        </div>
+        <div class="editor-wrapper">
+            <div class="line-numbers" id="lines">1</div>
+            <textarea 
+                class="editor" 
+                id="editor" 
+                placeholder="Start typing or paste your code here... Preview updates instantly!"
+                spellcheck="false"
+            ></textarea>
+        </div>
+    </div>
+    <div id="divider"></div>
+    <div class="pane" id="right">
+        <div class="pane-header">
+            <span>Preview</span>
+            <span class="live-indicator" id="liveIndicator">
+                <span class="dot"></span>
+                Live
+            </span>
+        </div>
+        <div class="output-wrapper" id="outputWrapper">
+            <div id="output">
+                <div class="empty-state">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                    </svg>
+                    <h3>No code yet</h3>
+                    <p>Start typing in the editor to see the preview</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-  <script>
-    const textarea = document.getElementById('code');
-    const highlight = document.getElementById('highlight');
-    const languageSelect = document.getElementById('language');
-    const iframe = document.getElementById('preview');
-    const status = document.getElementById('status');
+<!-- Status Bar -->
+<div class="status-bar">
+    <div class="status-left">
+        <span class="status-item" id="cursorPos">Ln 1, Col 1</span>
+        <span class="status-item" id="charCount">0 characters</span>
+        <span class="status-item success" id="previewStatus">✓ Preview ready</span>
+    </div>
+    <div class="status-right">
+        <span class="status-item" id="langStatus">Plaintext</span>
+        <span class="status-item">UTF-8</span>
+    </div>
+</div>
 
-    // Auto-preview on every change (typing, pasting, deleting)
-    let timeout;
-    function autoPreview() {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => {
-        runCode();
-        status.textContent = "Auto-preview updated just now!";
-        setTimeout(() => status.textContent = "Auto-preview enabled • Live updates on every change!", 2000);
-      }, 150); // Smooth debounce
-    }
+<!-- Toast -->
+<div class="toast" id="toast">Copied to clipboard!</div>
 
-    // Manual preview function
-    function runCode() {
-      const code = textarea.value.trim() || "<h3 style='color:#666;text-align:center;padding:50px;'>Preview will appear here...</h3>";
-      const blob = new Blob([code], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      iframe.src = url;
-      setTimeout(() => URL.revokeObjectURL(url), 100);
-    }
+<script type="module">
+import { createHighlighter } from 'https://esm.sh/shiki@1.22.0';
 
-    function updateHighlight() {
-      const code = textarea.value;
-      const lang = languageSelect.value === 'html' ? 'markup' : languageSelect.value;
-      highlight.className = `language-${lang}`;
-      highlight.textContent = code || ' ';
-      Prism.highlightElement(highlight);
-    }
+let highlighter;
+let isDragging = false;
+let currentLang = 'plaintext';
+let autoPreview = true;
+let debounceTimer = null;
+let hasUnsavedChanges = false;
 
-    function clearCode() {
-      if (confirm("Delete all code?")) {
-        textarea.value = "";
-        updateHighlight();
-        iframe.src = "about:blank";
-        status.textContent = "Cleared! Start fresh, Elijah!";
-      }
-    }
+// Elements
+const editor = document.getElementById('editor');
+const output = document.getElementById('output');
+const outputWrapper = document.getElementById('outputWrapper');
+const lines = document.getElementById('lines');
+const langBadge = document.getElementById('langBadge');
+const langStatus = document.getElementById('langStatus');
+const cursorPos = document.getElementById('cursorPos');
+const charCount = document.getElementById('charCount');
+const previewStatus = document.getElementById('previewStatus');
+const runBtn = document.getElementById('runBtn');
+const autoPreviewToggle = document.getElementById('autoPreviewToggle');
+const liveIndicator = document.getElementById('liveIndicator');
 
-    function copyCode() {
-      textarea.select();
-      document.execCommand('copy');
-      status.textContent = "Copied to clipboard! You're unstoppable!";
-      setTimeout(() => status.textContent = "Auto-preview enabled • Live updates on every change!", 2000);
-    }
-
-    // Sync scroll
-    textarea.addEventListener('scroll', () => {
-      highlight.scrollTop = textarea.scrollTop;
-      highlight.scrollLeft = textarea.scrollLeft;
+// Initialize syntax highlighter
+async function init() {
+    highlighter = await createHighlighter({
+        themes: ['github-dark'],
+        langs: ['javascript', 'typescript', 'python', 'html', 'css', 'json', 'markdown', 'java', 'c', 'cpp', 'csharp', 'go', 'rust', 'php', 'ruby', 'swift', 'kotlin', 'sql', 'bash', 'yaml', 'xml', 'jsx', 'tsx']
     });
+    
+    // Load saved code
+    const saved = localStorage.getItem('elijahCodeEditor');
+    if (saved) {
+        editor.value = saved;
+    }
+    
+    // Load auto-preview setting
+    const savedAutoPreview = localStorage.getItem('elijahAutoPreview');
+    if (savedAutoPreview !== null) {
+        autoPreview = savedAutoPreview === 'true';
+        updateAutoPreviewUI();
+    }
+    
+    updatePreview();
+}
 
-    // Auto-update on ANY change
-    textarea.addEventListener('input', () => {
-      updateHighlight();
-      autoPreview(); // This triggers instant preview
+init();
+
+// Toggle auto preview
+window.toggleAutoPreview = function() {
+    autoPreview = !autoPreview;
+    localStorage.setItem('elijahAutoPreview', autoPreview);
+    updateAutoPreviewUI();
+    
+    if (autoPreview && hasUnsavedChanges) {
+        updatePreview();
+    }
+};
+
+function updateAutoPreviewUI() {
+    if (autoPreview) {
+        autoPreviewToggle.classList.add('active');
+        liveIndicator.style.display = 'flex';
+        runBtn.classList.remove('pulse');
+    } else {
+        autoPreviewToggle.classList.remove('active');
+        liveIndicator.style.display = 'none';
+    }
+}
+
+// Manual run preview
+window.runPreview = function() {
+    updatePreview();
+    flashOutput();
+    showToast('Preview updated!');
+    runBtn.classList.remove('pulse');
+    hasUnsavedChanges = false;
+};
+
+// Flash effect on output
+function flashOutput() {
+    outputWrapper.classList.remove('flash');
+    void outputWrapper.offsetWidth; // Trigger reflow
+    outputWrapper.classList.add('flash');
+}
+
+// Divider drag logic
+const divider = document.getElementById('divider');
+const left = document.getElementById('left');
+
+divider.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    divider.classList.add('active');
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    e.preventDefault();
+});
+
+document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const containerWidth = document.querySelector('.container').offsetWidth;
+    const newWidth = Math.max(200, Math.min(e.clientX, containerWidth - 200));
+    left.style.width = `${newWidth}px`;
+});
+
+document.addEventListener('mouseup', () => {
+    isDragging = false;
+    divider.classList.remove('active');
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+});
+
+// Tab support & keyboard shortcuts
+editor.addEventListener('keydown', (e) => {
+    // Ctrl+Enter to run preview
+    if (e.ctrlKey && e.key === 'Enter') {
+        e.preventDefault();
+        runPreview();
+        return;
+    }
+    
+    // Tab key
+    if (e.key === 'Tab') {
+        e.preventDefault();
+        const start = editor.selectionStart;
+        const end = editor.selectionEnd;
+        editor.value = editor.value.substring(0, start) + '  ' + editor.value.substring(end);
+        editor.selectionStart = editor.selectionEnd = start + 2;
+        triggerUpdate();
+    }
+    
+    // Auto-close brackets
+    const pairs = { '(': ')', '[': ']', '{': '}', '"': '"', "'": "'", '`': '`' };
+    if (pairs[e.key]) {
+        e.preventDefault();
+        const start = editor.selectionStart;
+        const end = editor.selectionEnd;
+        const selected = editor.value.substring(start, end);
+        editor.value = editor.value.substring(0, start) + e.key + selected + pairs[e.key] + editor.value.substring(end);
+        editor.selectionStart = editor.selectionEnd = start + 1;
+        triggerUpdate();
+    }
+    
+    // Enter key - auto indent
+    if (e.key === 'Enter') {
+        const start = editor.selectionStart;
+        const textBefore = editor.value.substring(0, start);
+        const currentLine = textBefore.split('\n').pop();
+        const indent = currentLine.match(/^\s*/)[0];
+        
+        // Extra indent after { or :
+        const lastChar = textBefore.trim().slice(-1);
+        const extraIndent = (lastChar === '{' || lastChar === ':') ? '  ' : '';
+        
+        e.preventDefault();
+        const insertion = '\n' + indent + extraIndent;
+        editor.value = editor.value.substring(0, start) + insertion + editor.value.substring(editor.selectionEnd);
+        editor.selectionStart = editor.selectionEnd = start + insertion.length;
+        triggerUpdate();
+    }
+});
+
+// Input events - instant preview
+editor.addEventListener('input', triggerUpdate);
+editor.addEventListener('paste', () => {
+    setTimeout(triggerUpdate, 0);
+});
+editor.addEventListener('cut', () => {
+    setTimeout(triggerUpdate, 0);
+});
+
+editor.addEventListener('click', updateCursor);
+editor.addEventListener('keyup', updateCursor);
+editor.addEventListener('scroll', syncScroll);
+
+function syncScroll() {
+    lines.style.top = (16 - editor.scrollTop) + 'px';
+}
+
+function updateCursor() {
+    const text = editor.value.substring(0, editor.selectionStart);
+    const lineNum = text.split('\n').length;
+    const colNum = text.split('\n').pop().length + 1;
+    cursorPos.textContent = `Ln ${lineNum}, Col ${colNum}`;
+}
+
+// Trigger update with debounce for performance
+function triggerUpdate() {
+    // Update line numbers and stats immediately
+    updateLineNumbers();
+    updateStats();
+    
+    // Save immediately
+    localStorage.setItem('elijahCodeEditor', editor.value);
+    
+    hasUnsavedChanges = true;
+    
+    if (autoPreview) {
+        // Debounce the preview update for smooth typing
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            updatePreview();
+            flashOutput();
+        }, 50); // 50ms delay - feels instant but prevents lag
+    } else {
+        // Show pulse animation on run button when auto-preview is off
+        runBtn.classList.add('pulse');
+        previewStatus.textContent = '⏳ Preview pending...';
+        previewStatus.classList.remove('success');
+    }
+}
+
+function updateLineNumbers() {
+    const code = editor.value;
+    const lineCount = Math.max(1, code.split('\n').length);
+    lines.innerHTML = Array.from({ length: lineCount }, (_, i) => i + 1).join('<br>');
+}
+
+function updateStats() {
+    const code = editor.value;
+    charCount.textContent = `${code.length} characters`;
+}
+
+// Detect language from code
+function detectLanguage(code) {
+    const trimmed = code.trim();
+    
+    if (!trimmed) return 'plaintext';
+    
+    // HTML detection
+    if (/<(!DOCTYPE|html|head|body|div|span|p|a|script|style|link|meta)/i.test(trimmed)) return 'html';
+    
+    // CSS detection
+    if (/^[\s\S]*\{[\s\S]*:[\s\S]*;[\s\S]*\}/.test(trimmed) && !/function|const|let|var|=>/.test(trimmed)) return 'css';
+    
+    // JSON detection
+    if (/^[\s]*[\[{]/.test(trimmed) && /[\]}][\s]*$/.test(trimmed)) {
+        try { JSON.parse(trimmed); return 'json'; } catch {}
+    }
+    
+    // Python detection
+    if (/^(import |from |def |class |print\(|if __name__|#.*python)/mi.test(trimmed)) return 'python';
+    
+    // TypeScript/TSX detection
+    if (/^(interface |type |:\s*(string|number|boolean|any)\b|<[A-Z]\w*>)/m.test(trimmed)) {
+        return /<[A-Z][a-z]+/.test(trimmed) ? 'tsx' : 'typescript';
+    }
+    
+    // JSX detection
+    if (/<[A-Z][a-z]+/.test(trimmed) && /import|export|const|function/.test(trimmed)) return 'jsx';
+    
+    // JavaScript detection
+    if (/^(const |let |var |function |import |export |class |=>|console\.)/m.test(trimmed)) return 'javascript';
+    
+    // Java detection
+    if (/^(public |private |protected |class |void |int |String |System\.out)/m.test(trimmed)) return 'java';
+    
+    // C# detection
+    if (/^(using |namespace |public class |Console\.Write|static void Main)/m.test(trimmed)) return 'csharp';
+    
+    // Go detection
+    if (/^(package |import \(|func |fmt\.Print)/m.test(trimmed)) return 'go';
+    
+    // Rust detection
+    if (/^(fn |let mut |pub fn |impl |use std::)/m.test(trimmed)) return 'rust';
+    
+    // PHP detection
+    if (/<\?php|echo |function.*\$|\$\w+\s*=/.test(trimmed)) return 'php';
+    
+    // Ruby detection
+    if (/^(def |end$|puts |require |class \w+ < )/m.test(trimmed)) return 'ruby';
+    
+    // SQL detection
+    if (/^(SELECT |INSERT |UPDATE |DELETE |CREATE |DROP |ALTER )/mi.test(trimmed)) return 'sql';
+    
+    // Bash detection
+    if (/^(#!\/bin\/(bash|sh)|echo |export |if \[\[)/m.test(trimmed)) return 'bash';
+    
+    // YAML detection
+    if (/^\w+:\s*(\n|$)/m.test(trimmed) && !/{|}/.test(trimmed)) return 'yaml';
+    
+    // Markdown detection
+    if (/^(#{1,6} |[*-] |\d+\. |```)/m.test(trimmed)) return 'markdown';
+    
+    // C/C++ detection
+    if (/#include|int main\(|printf\(|iostream/.test(trimmed)) {
+        return /iostream|cout|cin|::/.test(trimmed) ? 'cpp' : 'c';
+    }
+    
+    return 'plaintext';
+}
+
+// Main preview update function
+function updatePreview() {
+    const code = editor.value;
+    
+    updateLineNumbers();
+    updateStats();
+    
+    if (!code.trim()) {
+        output.innerHTML = `
+            <div class="empty-state">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                </svg>
+                <h3>No code yet</h3>
+                <p>Start typing in the editor to see the preview</p>
+            </div>
+        `;
+        langBadge.textContent = 'plaintext';
+        langStatus.textContent = 'Plaintext';
+        currentLang = 'plaintext';
+        previewStatus.textContent = '✓ Preview ready';
+        previewStatus.classList.add('success');
+        return;
+    }
+    
+    // Detect language
+    const lang = detectLanguage(code);
+    currentLang = lang;
+    langBadge.textContent = lang;
+    langStatus.textContent = lang.charAt(0).toUpperCase() + lang.slice(1);
+    
+    // If HTML, render live preview
+    if (lang === 'html') {
+        output.innerHTML = `<iframe id="preview" srcdoc="${code.replace(/"/g, '&quot;')}"></iframe>`;
+    } else if (highlighter) {
+        // Syntax highlight other languages
+        try {
+            const html = highlighter.codeToHtml(code, {
+                lang: lang === 'plaintext' ? 'text' : lang,
+                theme: 'github-dark'
+            });
+            output.innerHTML = `<div class="code-output">${html}</div>`;
+        } catch {
+            output.innerHTML = `<div class="code-output"><pre>${escapeHtml(code)}</pre></div>`;
+        }
+    }
+    
+    hasUnsavedChanges = false;
+    previewStatus.textContent = '✓ Preview updated';
+    previewStatus.classList.add('success');
+    runBtn.classList.remove('pulse');
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Toolbar functions
+window.newFile = function() {
+    if (editor.value && !confirm('Create a new file? Your current code will be cleared.')) return;
+    editor.value = '';
+    updatePreview();
+    showToast('New file created');
+};
+
+window.copyCode = function() {
+    navigator.clipboard.writeText(editor.value).then(() => {
+        showToast('Copied to clipboard!');
     });
+};
 
-    textarea.addEventListener('paste', () => {
-      setTimeout(() => {
-        updateHighlight();
-        autoPreview();
-      }, 10);
-    });
+window.downloadCode = function() {
+    const extensions = {
+        html: 'html', css: 'css', javascript: 'js', typescript: 'ts',
+        jsx: 'jsx', tsx: 'tsx', python: 'py', java: 'java',
+        csharp: 'cs', go: 'go', rust: 'rs', php: 'php',
+        ruby: 'rb', sql: 'sql', bash: 'sh', yaml: 'yml',
+        json: 'json', markdown: 'md', c: 'c', cpp: 'cpp',
+        xml: 'xml', plaintext: 'txt'
+    };
+    
+    const ext = extensions[currentLang] || 'txt';
+    const blob = new Blob([editor.value], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `code.${ext}`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('File downloaded!');
+};
 
-    languageSelect.addEventListener('change', updateHighlight);
+function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2000);
+}
 
-    // Initial load
-    updateHighlight();
-    runCode();
-  </script>
+// Initial cursor position
+updateCursor();
+
+</script>
+
 </body>
 </html>
