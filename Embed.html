@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elijah’s YouTube Converter</title>
+    <script>
+        document.documentElement.style.background = '#0f0f0f'
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, sans-serif;
+        }
+
+        body {
+            background: #0f0f0f;
+            color: #e5e7eb;
+            line-height: 1.4;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 20px;
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+            color: white;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            min-height: 100vh;
+            gap: 24px;
+            padding: 24px;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .panel {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .section {
+            background: #1f2937;
+            border-radius: 12px;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 32px;
+            font-size: 14px;
+        }
+
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #3b82f6;
+            cursor: pointer;
+        }
+
+        input[type="text"], input[type="number"] {
+            padding: 10px 12px;
+            border: none;
+            border-radius: 6px;
+            background: #374151;
+            color: white;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        .preview {
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            aspect-ratio: 16 / 9;
+            background: #000;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+        }
+
+        .code-output {
+            background: #111827;
+            border-radius: 10px;
+            padding: 16px;
+            font-family: 'Courier New', monospace;
+            font-size: 12.5px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 220px;
+            overflow-y: auto;
+            margin-bottom: 12px;
+            border: 1px solid #374151;
+        }
+
+        .copy-btn {
+            padding: 14px;
+            width: 100%;
+            border: none;
+            border-radius: 10px;
+            background: #3b82f6;
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: #2563eb;
+        }
+
+        .copy-btn.success {
+            background: #10b981;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid #374151;
+            margin: 4px 0;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Elijah’s YouTube Converter</h1>
+    <p>Generate beautiful, responsive YouTube embed codes in seconds</p>
+</header>
+
+<div class="container">
+    <!-- Left Side: Customization Panel -->
+    <div class="panel">
+        <div class="section">
+            <h3>Video URL</h3>
+            <input type="text" id="url" value="https://www.youtube.com/watch?v=dQw4w9WgXcQ" placeholder="Paste any YouTube URL">
+        </div>
+
+        <div class="section">
+            <h3>Options</h3>
+
+            <div class="option">
+                <span>Responsive embed</span>
+                <input type="checkbox" id="responsive" checked>
+            </div>
+            <hr>
+            <div class="option">
+                <span>Autoplay</span>
+                <input type="checkbox" id="autoplay">
+            </div>
+            <div class="option">
+                <span>Loop</span>
+                <input type="checkbox" id="loop">
+            </div>
+            <div class="option">
+                <span>Muted</span>
+                <input type="checkbox" id="muted">
+            </div>
+            <div class="option">
+                <span>Show controls</span>
+                <input type="checkbox" id="controls" checked>
+            </div>
+            <div class="option">
+                <span>Allow fullscreen</span>
+                <input type="checkbox" id="fullscreen" checked>
+            </div>
+            <div class="option">
+                <span>Hide YouTube logo</span>
+                <input type="checkbox" id="modestbranding">
+            </div>
+            <div class="option">
+                <span>Hide related videos</span>
+                <input type="checkbox" id="rel">
+            </div>
+            <div class="option">
+                <span>Disable keyboard controls</span>
+                <input type="checkbox" id="disablekb">
+            </div>
+            <div class="option">
+                <span>Allow picture-in-picture</span>
+                <input type="checkbox" id="allowpip" checked>
+            </div>
+            <div class="option">
+                <span>Play inline on mobile</span>
+                <input type="checkbox" id="playsinline" checked>
+            </div>
+            <hr>
+            <div class="option">
+                <span>Start at (seconds)</span>
+                <input type="number" id="start" style="width: 80px" value="0" min="0">
+            </div>
+            <div class="option">
+                <span>End at (seconds)</span>
+                <input type="number" id="end" style="width: 80px" value="">
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Side: Preview and Code -->
+    <div class="panel">
+        <h3>Live Preview</h3>
+        <div class="preview" id="preview"></div>
+
+        <h3>Embed Code (Copy & Paste)</h3>
+        <div class="code-output" id="codeoutput"></div>
+
+        <button class="copy-btn" id="copybtn">Copy Embed Code</button>
+    </div>
+</div>
+
+<script>
+    const inputs = document.querySelectorAll('input')
+    const preview = document.getElementById('preview')
+    const codeoutput = document.getElementById('codeoutput')
+    const copybtn = document.getElementById('copybtn')
+
+    inputs.forEach(i => i.addEventListener('input', updateAll))
+    updateAll()
+
+    function updateAll() {
+        const opts = {}
+        inputs.forEach(i => {
+            opts[i.id] = i.type === 'checkbox' ? i.checked : i.value
+        })
+
+        let videoId = opts.url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/)?.[1]
+
+        let params = []
+        if(opts.autoplay) params.push('autoplay=1')
+        if(opts.loop) params.push('loop=1')
+        if(opts.muted) params.push('mute=1')
+        if(!opts.controls) params.push('controls=0')
+        if(opts.modestbranding) params.push('modestbranding=1')
+        if(opts.rel) params.push('rel=0')
+        if(opts.disablekb) params.push('disablekb=1')
+        if(opts.start > 0) params.push(`start=${opts.start}`)
+        if(opts.end) params.push(`end=${opts.end}`)
+
+        let allow = []
+        if(opts.fullscreen) allow.push('fullscreen')
+        if(opts.allowpip) allow.push('picture-in-picture')
+        allow.push('accelerometer', 'autoplay', 'clipboard-write', 'encrypted-media', 'gyroscope')
+
+        let iframe = `<iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}?${params.join('&')}" allow="${allow.join('; ')}" allowfullscreen frameborder="0" style="border:none;"></iframe>`
+
+        let finalCode = iframe
+        if(opts.responsive) {
+            finalCode = `<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;">
+  ${iframe.replace('width="560" height="315"', 'style="position:absolute;top:0;left:0;width:100%;height:100%;"')}
+</div>`
+        }
+
+        preview.innerHTML = iframe
+        codeoutput.textContent = finalCode
+    }
+
+    copybtn.addEventListener('click', async () => {
+        await navigator.clipboard.writeText(codeoutput.textContent)
+        copybtn.textContent = 'Copied!'
+        copybtn.classList.add('success')
+        setTimeout(() => {
+            copybtn.textContent = 'Copy Embed Code'
+            copybtn.classList.remove('success')
+        }, 1500)
+    })
+</script>
+
+</body>
+</html>
