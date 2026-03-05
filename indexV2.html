@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BumProxy — Tristan is a bum</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0f0f14;
+      margin: 0;
+      min-height: 100vh;
+    }
+
+    .glow-text {
+      text-shadow: 0 0 20px rgba(245, 158, 11, 0.6), 0 0 40px rgba(245, 158, 11, 0.3);
+    }
+
+    .banner-scroll {
+      animation: scroll-left 12s linear infinite;
+    }
+
+    @keyframes scroll-left {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+
+    @keyframes pulse-border {
+      0%, 100% { border-color: #f59e0b; box-shadow: 0 0 10px rgba(245, 158, 11, 0.3); }
+      50% { border-color: #ef4444; box-shadow: 0 0 20px rgba(239, 68, 68, 0.4); }
+    }
+
+    .url-bar:focus {
+      animation: pulse-border 2s ease-in-out infinite;
+    }
+
+    .proxy-frame {
+      background: white;
+      border-radius: 0 0 12px 12px;
+      overflow: hidden;
+    }
+
+    .loader {
+      border: 4px solid rgba(245, 158, 11, 0.2);
+      border-top: 4px solid #f59e0b;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .quick-btn {
+      transition: all 0.2s;
+    }
+    .quick-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+    }
+
+    #proxyFrame {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+    }
+    .status-dot.online { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+    .status-dot.loading { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; }
+    .status-dot.error { background: #ef4444; box-shadow: 0 0 6px #ef4444; }
+  </style>
+</head>
+<body class="text-white">
+
+  <!-- Top Marquee Banner -->
+  <div class="bg-red-600 overflow-hidden py-1 relative">
+    <div class="banner-scroll whitespace-nowrap font-bold text-sm tracking-widest">
+      🔥 TRISTAN IS A BUM &nbsp;&bull;&nbsp; TRISTAN IS A BUM &nbsp;&bull;&nbsp; TRISTAN IS A BUM &nbsp;&bull;&nbsp; TRISTAN IS A BUM &nbsp;&bull;&nbsp; TRISTAN IS A BUM &nbsp;&bull;&nbsp; TRISTAN IS A BUM &nbsp;&bull;&nbsp; TRISTAN IS A BUM &nbsp;&bull;&nbsp; TRISTAN IS A BUM 🔥
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="text-center py-6 px-4">
+    <h1 class="text-5xl font-black glow-text text-amber-400 mb-1">🌐 BumProxy</h1>
+    <p class="text-zinc-400 text-sm">The only proxy that tells the truth:</p>
+    <p class="text-red-500 font-black text-2xl mt-1 tracking-wide animate-pulse">TRISTAN IS A BUM</p>
+  </header>
+
+  <!-- Main Proxy UI -->
+  <main class="max-w-6xl mx-auto px-4 pb-10">
+
+    <!-- URL Bar -->
+    <div class="bg-zinc-900 rounded-xl border border-zinc-700 p-4 mb-2">
+      <div class="flex gap-2 items-center">
+        <!-- Browser dots -->
+        <div class="flex gap-1.5 mr-2">
+          <div class="w-3 h-3 rounded-full bg-red-500"></div>
+          <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+          <div class="w-3 h-3 rounded-full bg-green-500"></div>
+        </div>
+
+        <div class="flex-1 flex gap-2">
+          <input
+            id="urlInput"
+            type="text"
+            placeholder="Enter a URL (e.g. https://example.com)"
+            class="url-bar flex-1 bg-zinc-800 border border-zinc-600 rounded-lg px-4 py-2.5 text-white text-sm outline-none placeholder-zinc-500"
+            onkeydown="if(event.key==='Enter') loadSite()"
+          />
+          <button onclick="loadSite()" class="bg-amber-500 hover:bg-amber-400 text-black font-bold px-6 py-2.5 rounded-lg text-sm transition-colors cursor-pointer">
+            GO
+          </button>
+          <button onclick="clearFrame()" class="bg-zinc-700 hover:bg-zinc-600 text-white font-semibold px-4 py-2.5 rounded-lg text-sm transition-colors cursor-pointer">
+            ✕
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="flex flex-wrap gap-2 mt-3 ml-11">
+        <button onclick="quickLoad('https://example.com')" class="quick-btn bg-zinc-800 border border-zinc-600 hover:border-amber-500 text-zinc-300 hover:text-amber-400 px-3 py-1 rounded-md text-xs cursor-pointer">example.com</button>
+        <button onclick="quickLoad('https://www.wikipedia.org')" class="quick-btn bg-zinc-800 border border-zinc-600 hover:border-amber-500 text-zinc-300 hover:text-amber-400 px-3 py-1 rounded-md text-xs cursor-pointer">wikipedia.org</button>
+        <button onclick="quickLoad('https://info.cern.ch')" class="quick-btn bg-zinc-800 border border-zinc-600 hover:border-amber-500 text-zinc-300 hover:text-amber-400 px-3 py-1 rounded-md text-xs cursor-pointer">info.cern.ch</button>
+        <button onclick="quickLoad('https://www.neverssl.com')" class="quick-btn bg-zinc-800 border border-zinc-600 hover:border-amber-500 text-zinc-300 hover:text-amber-400 px-3 py-1 rounded-md text-xs cursor-pointer">neverssl.com</button>
+        <button onclick="quickLoad('https://httpbin.org')" class="quick-btn bg-zinc-800 border border-zinc-600 hover:border-amber-500 text-zinc-300 hover:text-amber-400 px-3 py-1 rounded-md text-xs cursor-pointer">httpbin.org</button>
+      </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div id="statusBar" class="flex items-center gap-2 px-4 py-2 mb-2 text-xs text-zinc-400">
+      <div id="statusDot" class="status-dot online"></div>
+      <span id="statusText">Ready — Enter a URL above to browse</span>
+      <span class="ml-auto text-zinc-600">Powered by BumProxy™ (Tristan is still a bum)</span>
+    </div>
+
+    <!-- Iframe Container -->
+    <div class="bg-zinc-900 rounded-xl border border-zinc-700 overflow-hidden" style="height: 70vh;">
+      <!-- Loading overlay -->
+      <div id="loadingOverlay" class="hidden w-full h-full flex flex-col items-center justify-center bg-zinc-900">
+        <div class="loader mb-4"></div>
+        <p class="text-amber-400 font-semibold">Loading site...</p>
+        <p class="text-zinc-500 text-xs mt-1">Reminder: Tristan is a bum</p>
+      </div>
+
+      <!-- Welcome screen -->
+      <div id="welcomeScreen" class="w-full h-full flex flex-col items-center justify-center bg-zinc-900 px-4">
+        <div class="text-6xl mb-4">🌍</div>
+        <h2 class="text-2xl font-bold text-amber-400 mb-2">Welcome to BumProxy</h2>
+        <p class="text-zinc-400 text-center max-w-md mb-4">
+          Enter any URL in the bar above to fetch and render websites locally through our proxy service.
+        </p>
+        <div class="bg-red-500/10 border border-red-500/30 rounded-lg px-6 py-3 text-center">
+          <p class="text-red-400 font-black text-lg">📢 TRISTAN IS A BUM 📢</p>
+          <p class="text-red-300/60 text-xs mt-1">This message has been displayed <span id="bumCount" class="text-red-400 font-bold">∞</span> times</p>
+        </div>
+        <div class="mt-6 text-zinc-600 text-xs text-center">
+          <p>Try clicking one of the quick links above to get started!</p>
+          <p class="mt-1">Sites are fetched via CORS proxy and rendered locally in your browser.</p>
+        </div>
+      </div>
+
+      <!-- The actual iframe for displaying proxied content -->
+      <iframe id="proxyFrame" class="hidden" sandbox="allow-same-origin allow-scripts allow-forms" title="Proxied Website"></iframe>
+    </div>
+
+    <!-- Info Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+      <div class="bg-zinc-900 border border-zinc-700 rounded-xl p-5">
+        <div class="text-2xl mb-2">🛡️</div>
+        <h3 class="text-amber-400 font-bold mb-1">How It Works</h3>
+        <p class="text-zinc-400 text-sm">Fetches website HTML via a CORS proxy API, then renders the content locally in a sandboxed iframe. No server needed!</p>
+      </div>
+      <div class="bg-zinc-900 border border-zinc-700 rounded-xl p-5">
+        <div class="text-2xl mb-2">⚡</div>
+        <h3 class="text-amber-400 font-bold mb-1">Limitations</h3>
+        <p class="text-zinc-400 text-sm">Some sites with complex JS, relative paths, or strict CSP may not render perfectly. Simple/static sites work best.</p>
+      </div>
+      <div class="bg-zinc-900 border border-zinc-700 rounded-xl p-5">
+        <div class="text-2xl mb-2">🔥</div>
+        <h3 class="text-amber-400 font-bold mb-1">Fun Fact</h3>
+        <p class="text-zinc-400 text-sm">Did you know? <span class="text-red-400 font-bold">Tristan is a bum.</span> This has been scientifically proven and peer-reviewed.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="text-center py-6 border-t border-zinc-800 text-zinc-600 text-xs">
+    <p>BumProxy™ &copy; 2025 — All rights reserved — <span class="text-red-500 font-bold">Tristan is a bum.</span></p>
+  </footer>
+
+  <script>
+    // CORS proxy services to try (fallbacks)
+    const PROXY_SERVICES = [
+      (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+      (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+      (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+    ];
+
+    let currentProxyIndex = 0;
+
+    function setStatus(type, message) {
+      const dot = document.getElementById('statusDot');
+      const text = document.getElementById('statusText');
+      dot.className = `status-dot ${type}`;
+      text.textContent = message;
+    }
+
+    function showLoading() {
+      document.getElementById('welcomeScreen').classList.add('hidden');
+      document.getElementById('proxyFrame').classList.add('hidden');
+      document.getElementById('loadingOverlay').classList.remove('hidden');
+      document.getElementById('loadingOverlay').classList.add('flex');
+    }
+
+    function showFrame() {
+      document.getElementById('welcomeScreen').classList.add('hidden');
+      document.getElementById('loadingOverlay').classList.add('hidden');
+      document.getElementById('proxyFrame').classList.remove('hidden');
+    }
+
+    function showWelcome() {
+      document.getElementById('welcomeScreen').classList.remove('hidden');
+      document.getElementById('loadingOverlay').classList.add('hidden');
+      document.getElementById('proxyFrame').classList.add('hidden');
+    }
+
+    function clearFrame() {
+      const frame = document.getElementById('proxyFrame');
+      frame.srcdoc = '';
+      showWelcome();
+      setStatus('online', 'Ready — Enter a URL above to browse');
+      document.getElementById('urlInput').value = '';
+    }
+
+    function quickLoad(url) {
+      document.getElementById('urlInput').value = url;
+      loadSite();
+    }
+
+    function normalizeUrl(input) {
+      let url = input.trim();
+      if (!url) return null;
+      // Add https:// if no protocol
+      if (!/^https?:\/\//i.test(url)) {
+        url = 'https://' + url;
+      }
+      return url;
+    }
+
+    // Rewrite relative URLs in HTML to absolute URLs based on the original site
+    function rewriteUrls(html, baseUrl) {
+      try {
+        const base = new URL(baseUrl);
+        const origin = base.origin;
+        const basePath = base.href.substring(0, base.href.lastIndexOf('/') + 1);
+
+        // Inject a <base> tag so relative URLs resolve correctly
+        if (/<head[^>]*>/i.test(html)) {
+          html = html.replace(/<head[^>]*>/i, `$&<base href="${baseUrl}">`);
+        } else if (/<html[^>]*>/i.test(html)) {
+          html = html.replace(/<html[^>]*>/i, `$&<head><base href="${baseUrl}"></head>`);
+        } else {
+          html = `<head><base href="${baseUrl}"></head>` + html;
+        }
+      } catch(e) {
+        // ignore URL parse errors
+      }
+      return html;
+    }
+
+    async function fetchWithProxy(url, proxyIndex) {
+      if (proxyIndex >= PROXY_SERVICES.length) {
+        throw new Error('All proxy services failed');
+      }
+
+      const proxyUrl = PROXY_SERVICES[proxyIndex](url);
+
+      const response = await fetch(proxyUrl);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const contentType = response.headers.get('content-type') || '';
+      const text = await response.text();
+
+      return text;
+    }
+
+    async function loadSite() {
+      const input = document.getElementById('urlInput').value;
+      const url = normalizeUrl(input);
+
+      if (!url) {
+        setStatus('error', 'Please enter a valid URL');
+        return;
+      }
+
+      document.getElementById('urlInput').value = url;
+      showLoading();
+      setStatus('loading', `Fetching ${url} ...`);
+
+      let html = null;
+      let usedProxy = -1;
+
+      // Try each proxy service
+      for (let i = 0; i < PROXY_SERVICES.length; i++) {
+        try {
+          html = await fetchWithProxy(url, i);
+          usedProxy = i;
+          break;
+        } catch (e) {
+          console.warn(`Proxy ${i} failed:`, e.message);
+          continue;
+        }
+      }
+
+      if (html === null) {
+        showWelcome();
+        setStatus('error', `Failed to load ${url} — All proxy services failed. Try a different site.`);
+        return;
+      }
+
+      // Rewrite URLs to be absolute
+      html = rewriteUrls(html, url);
+
+      // Inject into iframe via srcdoc
+      const frame = document.getElementById('proxyFrame');
+      frame.srcdoc = html;
+      showFrame();
+      setStatus('online', `Loaded: ${url} (proxy #${usedProxy + 1})`);
+    }
+  </script>
+</body>
+</html>
