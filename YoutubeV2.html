@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elijah's YouTube Converter</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --bg-dark: #0f172a;
+            --bg-panel: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --success: #22c55e;
+            --accent: #f59e0b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            padding: 1.2rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, var(--bg-panel) 0%, #2d3a4f 100%);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
+        }
+
+        .logo-icon svg {
+            width: 28px;
+            height: 28px;
+            fill: white;
+        }
+
+        h1 { 
+            font-size: 1.5rem; 
+            font-weight: 700; 
+            background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .badge { 
+            background: linear-gradient(135deg, var(--accent) 0%, #d97706 100%);
+            padding: 4px 12px; 
+            border-radius: 20px; 
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #000;
+        }
+
+        /* Layout */
+        .main-container {
+            display: grid;
+            grid-template-columns: 380px 1fr;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar Controls */
+        .sidebar {
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary);
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 0.5rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        label { 
+            font-size: 0.85rem; 
+            color: var(--text-muted); 
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        label span.value {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        input[type="text"], input[type="number"], select {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 10px 12px;
+            border-radius: 8px;
+            width: 100%;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="text"]:focus, input[type="number"]:focus, select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        input[type="range"] { 
+            width: 100%; 
+            cursor: pointer; 
+            accent-color: var(--primary);
+            height: 6px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-dark);
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            transition: border-color 0.2s;
+        }
+
+        .checkbox-group:hover {
+            border-color: var(--primary);
+        }
+
+        .checkbox-group span {
+            font-size: 0.9rem;
+        }
+
+        /* Custom Toggle Switch */
+        .toggle {
+            position: relative;
+            width: 44px;
+            height: 24px;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border);
+            transition: 0.3s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        .toggle input:checked + .toggle-slider {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        }
+
+        .toggle input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+        }
+
+        /* Preview Area */
+        .preview-area {
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            background-color: #0a0f1a;
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(99, 102, 241, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(245, 158, 11, 0.03) 0%, transparent 50%);
+            overflow-y: auto;
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .preview-header h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .live-indicator {
+            width: 10px;
+            height: 10px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            50% { opacity: 0.8; box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+        }
+
+        /* Responsive Container Logic */
+        .iframe-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            background: #000;
+            padding-bottom: 56.25%; 
+            border-radius: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .iframe-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        #captionText {
+            text-align: center;
+            color: var(--text-muted);
+            font-style: italic;
+            padding: 0.5rem;
+        }
+
+        /* Code Output Box */
+        .code-section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .code-tabs {
+            display: flex;
+            gap: 5px;
+        }
+
+        .code-tab {
+            padding: 6px 12px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .code-tab.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .code-box {
+            background: #0d1117;
+            border-radius: 10px;
+            padding: 1.2rem;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #7dd3fc;
+            overflow: auto;
+            border: 1px solid var(--border);
+            white-space: pre-wrap;
+            word-break: break-all;
+            min-height: 150px;
+            max-height: 250px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .btn-copy {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            padding: 0.9rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-size: 0.95rem;
+        }
+        
+        .btn-copy:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-copy:active {
+            transform: translateY(0);
+        }
+
+        .btn-copy.copied { 
+            background: linear-gradient(135deg, var(--success) 0%, #16a34a 100%);
+        }
+
+        /* Feature Cards */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .feature-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .feature-card h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .feature-card p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 900px) {
+            .main-container { 
+                grid-template-columns: 1fr; 
+                grid-template-rows: auto 1fr; 
+            }
+            .sidebar { 
+                order: 2; 
+                max-height: 50vh;
+            }
+            .preview-area { 
+                order: 1; 
+                padding: 1rem;
+            }
+            header {
+                padding: 1rem;
+            }
+            h1 {
+                font-size: 1.2rem;
+            }
+            .badge {
+                display: none;
+            }
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo-section">
+        <div class="logo-icon">
+            <svg viewBox="0 0 24 24">
+                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+            </svg>
+        </div>
+        <div>
+            <h1>Elijah's YouTube Converter</h1>
+            <div class="subtitle">Create responsive embed codes easily</div>
+        </div>
+    </div>
+    <span class="badge">✨ PRO</span>
+</header>
+
+<div class="main-container">
+    <!-- Controls Sidebar -->
+    <div class="sidebar">
+        
+        <!-- Video Source -->
+        <div class="section-title">📺 Video Source</div>
+        <div class="control-group">
+            <label>YouTube URL</label>
+            <input type="text" id="videoUrl" placeholder="Paste YouTube link here..." value="https://www.youtube.com/watch?v=LXb3EKWsInQ">
+        </div>
+
+        <!-- Dimensions -->
+        <div class="section-title">📐 Dimensions</div>
+        <div class="control-group">
+            <label>Width <span class="value" id="widthVal">100%</span></label>
+            <input type="range" id="widthRange" min="10" max="100" value="100">
+        </div>
+        
+        <div class="control-group">
+            <label>Aspect Ratio</label>
+            <select id="aspectRatio">
+                <option value="56.25%">Standard (16:9)</option>
+                <option value="75%">Classic (4:3)</option>
+                <option value="100%">Square (1:1)</option>
+                <option value="133.33%">Portrait (3:4)</option>
+                <option value="42.85%">Cinematic (21:9)</option>
+            </select>
+        </div>
+
+        <!-- Playback Settings -->
+        <div class="section-title">⚙️ Playback Options</div>
+        <div class="checkbox-group">
+            <span>🔄 Autoplay</span>
+            <label class="toggle">
+                <input type="checkbox" id="autoplay">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        <div class="checkbox-group">
+            <span>🔇 Muted</span>
+            <label class="toggle">
+                <input type="checkbox" id="muted" checked>
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        <div class="checkbox-group">
+            <span>🔁 Loop Video</span>
+            <label class="toggle">
+                <input type="checkbox" id="loop">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        <div class="checkbox-group">
+            <span>🎮 Show Controls</span>
+            <label class="toggle">
+                <input type="checkbox" id="controls" checked>
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        <div class="checkbox-group">
+            <span>🚫 Hide Related Videos</span>
+            <label class="toggle">
+                <input type="checkbox" id="kiosk">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+
+        <!-- Timing -->
+        <div class="section-title">⏱️ Timing</div>
+        <div class="control-group">
+            <label>Start Time (seconds)</label>
+            <input type="number" id="startTime" placeholder="0" min="0">
+        </div>
+        <div class="control-group">
+            <label>End Time (seconds)</label>
+            <input type="number" id="endTime" placeholder="Leave empty for full video" min="0">
+        </div>
+
+        <!-- Visual Customization -->
+        <div class="section-title">🎨 Visual Settings</div>
+        <div class="checkbox-group">
+            <span>📺 Force HD Quality</span>
+            <label class="toggle">
+                <input type="checkbox" id="hd">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        <div class="checkbox-group">
+            <span>🍪 Privacy Mode (No Cookies)</span>
+            <label class="toggle">
+                <input type="checkbox" id="nocookies">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        <div class="checkbox-group">
+            <span>🌙 Dark Theme</span>
+            <label class="toggle">
+                <input type="checkbox" id="darkTheme">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        <div class="checkbox-group">
+            <span>🖼️ Show Title Bar</span>
+            <label class="toggle">
+                <input type="checkbox" id="showinfo">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        <div class="checkbox-group">
+            <span>⌨️ Enable Keyboard</span>
+            <label class="toggle">
+                <input type="checkbox" id="keyboard" checked>
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        <div class="checkbox-group">
+            <span>📝 Enable Captions</span>
+            <label class="toggle">
+                <input type="checkbox" id="captions">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+
+        <!-- Advanced -->
+        <div class="section-title">🔧 Advanced</div>
+        <div class="control-group">
+            <label>Border Radius <span class="value" id="radiusVal">12px</span></label>
+            <input type="range" id="borderRadius" min="0" max="50" value="12">
+        </div>
+
+        <div class="control-group">
+            <label>Custom CSS Class</label>
+            <input type="text" id="className" placeholder="my-video-class">
+        </div>
+        
+        <div class="control-group">
+            <label>Caption Text</label>
+            <input type="text" id="caption" placeholder="Optional description...">
+        </div>
+
+    </div>
+
+    <!-- Main Content -->
+    <div class="preview-area">
+        
+        <!-- Live Preview -->
+        <div class="preview-header">
+            <h3><span class="live-indicator"></span> Live Preview</h3>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Resize window to test responsiveness</div>
+        </div>
+        
+        <div id="responsiveContainer" class="iframe-wrapper">
+            <iframe id="livePreviewFrame" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+        
+        <p id="captionText"></p>
+
+        <!-- Code Output -->
+        <div class="code-section">
+            <div class="code-header">
+                <h3>📋 Generated Code</h3>
+                <div class="code-tabs">
+                    <span class="code-tab active">HTML</span>
+                </div>
+            </div>
+            <textarea id="codeOutput" class="code-box" readonly></textarea>
+            <button class="btn-copy" onclick="copyCode()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                Copy Embed Code
+            </button>
+        </div>
+
+        <!-- Features -->
+        <div class="features-grid">
+            <div class="feature-card">
+                <h4>📱 Responsive</h4>
+                <p>Auto-fits any screen size</p>
+            </div>
+            <div class="feature-card">
+                <h4>⚡ No Coding</h4>
+                <p>Just copy and paste</p>
+            </div>
+            <div class="feature-card">
+                <h4>🎛️ 20+ Options</h4>
+                <p>Full customization</p>
+            </div>
+            <div class="feature-card">
+                <h4>👁️ Live Preview</h4>
+                <p>See changes instantly</p>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // State management object
+    const config = {
+        url: 'https://www.youtube.com/watch?v=LXb3EKWsInQ',
+        width: '100%',
+        ratio: '56.25%',
+        autoplay: false,
+        muted: true,
+        loop: false,
+        controls: true,
+        kiosk: false,
+        hd: false,
+        nocookies: false,
+        darkTheme: false,
+        showinfo: false,
+        keyboard: true,
+        captions: false,
+        start: 0,
+        end: 0,
+        className: '',
+        borderRadius: 12,
+        caption: ''
+    };
+
+    // Helper to extract YouTube ID
+    function getYouTubeId(url) {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
+    }
+
+    function updatePreview() {
+        const videoId = getYouTubeId(config.url);
+        const wrapper = document.getElementById('responsiveContainer');
+        const frame = document.getElementById('livePreviewFrame');
+        const codeBox = document.getElementById('codeOutput');
+        const captionEl = document.getElementById('captionText');
+
+        // Build Embed URL
+        let baseUrl = config.nocookies ? "https://www.youtube-nocookie.com/embed/" : "https://www.youtube.com/embed/";
+        let queryParams = [];
+
+        if (config.autoplay) queryParams.push("autoplay=1");
+        if (config.muted) queryParams.push("mute=1");
+        if (config.loop && videoId) queryParams.push("loop=1", `playlist=${videoId}`);
+        if (!config.controls) queryParams.push("controls=0");
+        if (config.kiosk) queryParams.push("modestbranding=1", "rel=0");
+        if (config.hd) queryParams.push("vq=hd1080");
+        if (config.darkTheme) queryParams.push("theme=dark");
+        if (!config.showinfo) queryParams.push("showinfo=0");
+        if (!config.keyboard) queryParams.push("disablekb=1");
+        if (config.captions) queryParams.push("cc_load_policy=1");
+        if (config.start > 0) queryParams.push(`start=${config.start}`);
+        if (config.end > 0) queryParams.push(`end=${config.end}`);
+
+        const queryString = queryParams.length > 0 ? `?${queryParams.join('&')}` : '';
+        const finalSrc = videoId 
+            ? `${baseUrl}${videoId}${queryString}`
+            : 'about:blank';
+
+        // Update Preview Iframe
+        frame.src = finalSrc;
+        frame.className = config.className || '';
+
+        // Update Container Styles
+        wrapper.style.paddingBottom = config.ratio;
+        wrapper.style.borderRadius = `${config.borderRadius}px`;
+        wrapper.style.width = config.width;
+        wrapper.style.margin = '0 auto';
+
+        // Caption logic
+        if(config.caption.trim() !== "") {
+            captionEl.textContent = config.caption;
+            captionEl.style.display = 'block';
+        } else {
+            captionEl.style.display = 'none';
+        }
+
+        // Generate HTML String with wrapper for responsiveness
+        const wrapperStyle = `position: relative; width: ${config.width}; padding-bottom: ${config.ratio}; height: 0; overflow: hidden; border-radius: ${config.borderRadius}px;`;
+        const iframeStyle = `position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0;`;
+        
+        let htmlCode = `<!-- Elijah's YouTube Converter - Responsive Embed -->
+<div style="${wrapperStyle}">
+  <iframe 
+    src="${finalSrc}"
+    style="${iframeStyle}"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowfullscreen${config.className ? `\n    class="${config.className}"` : ''}>
+  </iframe>
+</div>`;
+
+        if (config.caption.trim() !== "") {
+            htmlCode += `\n<p style="text-align: center; color: #666; font-style: italic; margin-top: 8px;">${config.caption}</p>`;
+        }
+
+        codeBox.value = htmlCode;
+    }
+
+    // Event Listeners for all inputs
+    document.getElementById('videoUrl').addEventListener('input', (e) => {
+        config.url = e.target.value;
+        updatePreview();
+    });
+
+    document.getElementById('widthRange').addEventListener('input', (e) => {
+        config.width = e.target.value + '%';
+        document.getElementById('widthVal').textContent = e.target.value + '%';
+        updatePreview();
+    });
+
+    document.getElementById('aspectRatio').addEventListener('change', (e) => {
+        config.ratio = e.target.value;
+        updatePreview();
+    });
+
+    document.getElementById('borderRadius').addEventListener('input', (e) => {
+        config.borderRadius = e.target.value;
+        document.getElementById('radiusVal').textContent = e.target.value + 'px';
+        updatePreview();
+    });
+
+    document.getElementById('startTime').addEventListener('input', (e) => {
+        config.start = parseInt(e.target.value) || 0;
+        updatePreview();
+    });
+
+    document.getElementById('endTime').addEventListener('input', (e) => {
+        config.end = parseInt(e.target.value) || 0;
+        updatePreview();
+    });
+
+    document.getElementById('className').addEventListener('input', (e) => {
+        config.className = e.target.value;
+        updatePreview();
+    });
+
+    document.getElementById('caption').addEventListener('input', (e) => {
+        config.caption = e.target.value;
+        updatePreview();
+    });
+
+    // Checkbox listeners
+    const checkboxes = ['autoplay', 'muted', 'loop', 'controls', 'kiosk', 'hd', 'nocookies', 'darkTheme', 'showinfo', 'keyboard', 'captions'];
+    checkboxes.forEach(id => {
+        document.getElementById(id).addEventListener('change', (e) => {
+            config[id] = e.target.checked;
+            updatePreview();
+        });
+    });
+
+    // Copy function
+    function copyCode() {
+        const codeBox = document.getElementById('codeOutput');
+        const btn = document.querySelector('.btn-copy');
+        
+        navigator.clipboard.writeText(codeBox.value).then(() => {
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"></polyline></svg> Copied!`;
+            btn.classList.add('copied');
+            
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.classList.remove('copied');
+            }, 2000);
+        });
+    }
+
+    // Initialize on load
+    window.onload = () => {
+        updatePreview();
+    };
+</script>
+
+</body>
+</html>
