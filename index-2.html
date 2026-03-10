@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elijah's Proxy V7</title>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --neon-cyan: #00f0ff;
+  --neon-purple: #b829dd;
+  --neon-green: #39ff14;
+  --neon-red: #ff003c;
+  --neon-orange: #ff6600;
+  --dark-bg: #0a0a0f;
+  --panel-bg: #0d0d18;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--dark-bg);
+  font-family: 'Rajdhani', sans-serif;
+  color: #c0c0d0;
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* Particle Canvas */
+#particles { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; }
+
+/* Scanline */
+body::after {
+  content:'';
+  position:fixed; top:0; left:0; width:100%; height:100%;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,240,255,0.015) 2px, rgba(0,240,255,0.015) 4px);
+  pointer-events:none; z-index:9999;
+}
+
+/* Glow text */
+.glow-cyan { text-shadow: 0 0 7px var(--neon-cyan), 0 0 20px var(--neon-cyan), 0 0 40px var(--neon-cyan); color: var(--neon-cyan); }
+.glow-purple { text-shadow: 0 0 7px var(--neon-purple), 0 0 20px var(--neon-purple); color: var(--neon-purple); }
+.glow-green { text-shadow: 0 0 7px var(--neon-green), 0 0 20px var(--neon-green); color: var(--neon-green); }
+.glow-red { text-shadow: 0 0 7px var(--neon-red), 0 0 20px var(--neon-red); color: var(--neon-red); }
+
+/* Panel style */
+.panel {
+  background: linear-gradient(135deg, rgba(13,13,24,0.95), rgba(20,20,40,0.9));
+  border: 1px solid rgba(0,240,255,0.15);
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+}
+
+.panel-glow {
+  box-shadow: 0 0 15px rgba(0,240,255,0.08), inset 0 0 15px rgba(0,240,255,0.03);
+}
+
+/* URL Input */
+#urlInput {
+  background: rgba(0,0,0,0.6);
+  border: 1px solid rgba(0,240,255,0.25);
+  color: #e0e0f0;
+  font-family: 'Rajdhani', monospace;
+  font-size: 15px;
+  transition: all 0.3s;
+}
+#urlInput:focus {
+  outline: none;
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 15px rgba(0,240,255,0.2);
+}
+
+/* Nav buttons */
+.nav-btn {
+  background: rgba(0,240,255,0.05);
+  border: 1px solid rgba(0,240,255,0.2);
+  color: #8080a0;
+  width: 36px; height: 36px;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 16px;
+}
+.nav-btn:hover { background: rgba(0,240,255,0.15); color: var(--neon-cyan); border-color: var(--neon-cyan); }
+.nav-btn:active { transform: scale(0.93); }
+
+/* Go button */
+.go-btn {
+  background: linear-gradient(135deg, rgba(0,240,255,0.15), rgba(184,41,221,0.15));
+  border: 1px solid var(--neon-cyan);
+  color: var(--neon-cyan);
+  padding: 0 20px; height: 36px;
+  border-radius: 6px;
+  font-family: 'Orbitron', monospace;
+  font-size: 12px; font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  letter-spacing: 2px;
+}
+.go-btn:hover { background: rgba(0,240,255,0.25); box-shadow: 0 0 20px rgba(0,240,255,0.3); }
+
+/* Proxy selector */
+.proxy-chip {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.03);
+  color: #666;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.proxy-chip:hover { border-color: rgba(0,240,255,0.4); color: #aaa; }
+.proxy-chip.active { border-color: var(--neon-cyan); color: var(--neon-cyan); background: rgba(0,240,255,0.08); }
+.proxy-chip.success { border-color: var(--neon-green); color: var(--neon-green); background: rgba(57,255,20,0.08); }
+.proxy-chip.failed { border-color: var(--neon-red); color: var(--neon-red); background: rgba(255,0,60,0.08); text-decoration: line-through; }
+.proxy-chip.trying { border-color: var(--neon-orange); color: var(--neon-orange); background: rgba(255,102,0,0.08); animation: pulse-orange 1s infinite; }
+
+@keyframes pulse-orange {
+  0%, 100% { box-shadow: 0 0 5px rgba(255,102,0,0.2); }
+  50% { box-shadow: 0 0 15px rgba(255,102,0,0.5); }
+}
+
+/* Quick links */
+.quick-link {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+  color: #555;
+  transition: all 0.2s;
+}
+.quick-link:hover { border-color: var(--neon-purple); color: var(--neon-purple); background: rgba(184,41,221,0.08); }
+
+/* Content frame */
+#contentFrame {
+  width: 100%; height: 100%;
+  border: none;
+  background: #000;
+  border-radius: 0 0 8px 8px;
+}
+
+/* Status bar */
+.status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--neon-green);
+  box-shadow: 0 0 6px var(--neon-green);
+  animation: blink 2s infinite;
+}
+.status-dot.loading { background: var(--neon-orange); box-shadow: 0 0 6px var(--neon-orange); animation: blink 0.5s infinite; }
+.status-dot.error { background: var(--neon-red); box-shadow: 0 0 6px var(--neon-red); animation: none; }
+
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* Log panel */
+#logPanel {
+  position: fixed; bottom: 30px; right: 10px;
+  width: 380px; max-height: 250px;
+  overflow-y: auto;
+  z-index: 100;
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  display: none;
+}
+#logPanel.visible { display: block; }
+#logPanel::-webkit-scrollbar { width: 4px; }
+#logPanel::-webkit-scrollbar-track { background: transparent; }
+#logPanel::-webkit-scrollbar-thumb { background: rgba(0,240,255,0.3); border-radius: 2px; }
+
+.log-entry { padding: 3px 8px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+.log-info { color: #5599bb; }
+.log-success { color: var(--neon-green); }
+.log-error { color: var(--neon-red); }
+.log-warn { color: var(--neon-orange); }
+.log-trying { color: var(--neon-cyan); }
+
+/* Splash */
+#splash {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  height: 100%; gap: 20px;
+  animation: fadeIn 0.5s ease;
+}
+@keyframes fadeIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+.splash-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 42px;
+  font-weight: 900;
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-purple), var(--neon-cyan));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 3s linear infinite;
+  filter: drop-shadow(0 0 20px rgba(0,240,255,0.3));
+}
+@keyframes shimmer { to { background-position: 200% center; } }
+
+/* Toggle log btn */
+.toggle-log-btn {
+  position: fixed; bottom: 4px; right: 10px;
+  background: rgba(0,240,255,0.08);
+  border: 1px solid rgba(0,240,255,0.2);
+  color: #556;
+  padding: 2px 12px;
+  border-radius: 4px 4px 0 0;
+  font-size: 10px;
+  cursor: pointer;
+  z-index: 101;
+  font-family: 'Rajdhani';
+}
+.toggle-log-btn:hover { color: var(--neon-cyan); }
+
+
+</style>
+</head>
+<body>
+
+<canvas id="particles"></canvas>
+
+<!-- HEADER -->
+<div class="relative z-10 flex flex-col h-screen">
+  <!-- Top Bar -->
+  <div class="panel panel-glow m-2 mb-0 p-2">
+    <!-- Title Row -->
+    <div class="flex items-center justify-between mb-2 px-2">
+      <div class="flex items-center gap-3">
+        <span class="font-['Orbitron'] text-lg font-black glow-cyan tracking-[4px]">ELIJAH'S PROXY</span>
+        <span class="font-['Orbitron'] text-xs font-bold glow-purple tracking-[3px]">V7</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="toggleLog()" class="quick-link text-[10px] tracking-wider font-['Orbitron']">📋 LOG</button>
+      </div>
+    </div>
+
+    <!-- Nav Row -->
+    <div class="flex items-center gap-2 px-1">
+      <button class="nav-btn" onclick="goBack()" title="Back">◀</button>
+      <button class="nav-btn" onclick="goForward()" title="Forward">▶</button>
+      <button class="nav-btn" onclick="reloadPage()" title="Reload">⟳</button>
+      <button class="nav-btn" onclick="goHome()" title="Home">⌂</button>
+
+      <input id="urlInput" type="text" placeholder="Enter URL or search term..." 
+             class="flex-1 h-[36px] px-4 rounded-md"
+             onkeydown="if(event.key==='Enter')navigate()">
+
+      <button class="go-btn" onclick="navigate()">GO ▸</button>
+    </div>
+
+    <!-- Proxy Chain Row -->
+    <div class="flex items-center gap-1 mt-2 px-2 overflow-x-auto pb-1">
+      <span class="text-[10px] text-gray-600 font-['Orbitron'] tracking-wider mr-1 shrink-0">PROXY CHAIN:</span>
+      <div id="proxyChips" class="flex gap-1 flex-wrap"></div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="flex items-center gap-2 mt-2 px-2">
+      <span class="text-[10px] text-gray-600 font-['Orbitron'] tracking-wider mr-1">QUICK:</span>
+      <button class="quick-link" onclick="go('https://www.google.com')">Google</button>
+      <button class="quick-link" onclick="go('https://www.youtube.com')">YouTube</button>
+      <button class="quick-link" onclick="go('https://en.wikipedia.org')">Wikipedia</button>
+      <button class="quick-link" onclick="go('https://www.reddit.com')">Reddit</button>
+      <button class="quick-link" onclick="go('https://duckduckgo.com')">DuckDuckGo</button>
+      <button class="quick-link" onclick="go('https://github.com')">GitHub</button>
+    </div>
+  </div>
+
+  <!-- Content Area -->
+  <div class="flex-1 m-2 mt-1 panel panel-glow overflow-hidden flex flex-col relative">
+    <div id="splashContainer">
+      <div id="splash">
+        <div class="splash-title">ELIJAH'S PROXY V7</div>
+        <div class="text-gray-500 text-sm tracking-[6px] font-['Orbitron']">UNRESTRICTED ACCESS</div>
+        <div class="text-gray-700 text-xs mt-4 max-w-md text-center leading-relaxed">
+          Enter a URL above to browse. The proxy will cascade through <span class="text-cyan-500" id="proxyCountLabel">12</span> open-source proxy services until one succeeds.
+        </div>
+        <div class="flex gap-2 mt-6 flex-wrap justify-center max-w-lg">
+          <span class="proxy-chip active">AllOrigins</span>
+          <span class="proxy-chip active">corsproxy.io</span>
+          <span class="proxy-chip active">CORS Anywhere</span>
+          <span class="proxy-chip active">CodeTabs</span>
+          <span class="proxy-chip active">cors.sh</span>
+          <span class="proxy-chip active">jsonp.afeld</span>
+          <span class="proxy-chip active">HexF/bare</span>
+          <span class="proxy-chip active">Womginx</span>
+          <span class="proxy-chip active">Direct Iframe</span>
+          <span class="proxy-chip active">Google Cache</span>
+          <span class="proxy-chip active">Wayback</span>
+          <span class="proxy-chip active">+ more</span>
+        </div>
+      </div>
+    </div>
+    <iframe id="contentFrame" style="display:none;" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+    <div id="loadingOverlay" style="display:none;" class="absolute inset-0 flex items-center justify-center bg-black/80 z-10">
+      <div class="text-center">
+        <div class="splash-title text-2xl mb-3">CONNECTING</div>
+        <div id="loadingProxy" class="text-gray-400 text-sm font-['Orbitron'] tracking-wider"></div>
+        <div id="loadingAttempt" class="text-gray-600 text-xs mt-2"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status Bar -->
+  <div class="flex items-center justify-between px-4 py-1 text-[11px] text-gray-600 relative z-10">
+    <div class="flex items-center gap-2">
+      <div id="statusDot" class="status-dot"></div>
+      <span id="statusText">Ready</span>
+    </div>
+    <div class="flex items-center gap-4">
+      <span id="proxyUsed">No proxy active</span>
+      <span id="loadTime"></span>
+    </div>
+  </div>
+</div>
+
+<!-- Log Panel -->
+<div id="logPanel" class="panel panel-glow">
+  <div class="p-2 border-b border-cyan-900/30 flex justify-between items-center sticky top-0 bg-[#0d0d18]">
+    <span class="font-['Orbitron'] text-[10px] tracking-wider glow-cyan">PROXY LOG</span>
+    <button onclick="clearLog()" class="text-[10px] text-gray-600 hover:text-red-400">CLEAR</button>
+  </div>
+  <div id="logEntries"></div>
+</div>
+
+
+
+<script>
+// ─── PARTICLE BACKGROUND ───
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+resizeCanvas(); window.addEventListener('resize', resizeCanvas);
+
+const particles = Array.from({length: 60}, () => ({
+  x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+  vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5,
+  size: Math.random()*2+0.5, alpha: Math.random()*0.4+0.1
+}));
+
+function drawParticles() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  particles.forEach(p => {
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+    ctx.fillStyle = `rgba(0,240,255,${p.alpha})`; ctx.fill();
+    p.x += p.vx; p.y += p.vy;
+    if(p.x<0||p.x>canvas.width) p.vx*=-1;
+    if(p.y<0||p.y>canvas.height) p.vy*=-1;
+  });
+  requestAnimationFrame(drawParticles);
+}
+drawParticles();
+
+// ─── PROXY DEFINITIONS ───
+// All open-source / public CORS proxies and HTML proxies
+const PROXIES = [
+  {
+    name: "AllOrigins",
+    type: "cors",
+    build: (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+    note: "Popular open-source CORS proxy"
+  },
+  {
+    name: "corsproxy.io",
+    type: "cors",
+    build: (url) => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+    note: "Free CORS proxy service"
+  },
+  {
+    name: "CORS Anywhere",
+    type: "cors",
+    build: (url) => `https://cors-anywhere.herokuapp.com/${url}`,
+    note: "Rob--W's open-source CORS Anywhere"
+  },
+  {
+    name: "CodeTabs",
+    type: "cors",
+    build: (url) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
+    note: "CodeTabs open proxy"
+  },
+  {
+    name: "cors.sh",
+    type: "cors",
+    build: (url) => `https://cors.sh/${url}`,
+    note: "Simple CORS proxy"
+  },
+  {
+    name: "jsonp.afeld",
+    type: "json-extract",
+    build: (url) => `https://jsonp.afeld.me/?url=${encodeURIComponent(url)}`,
+    note: "Afeld's JSONP proxy"
+  },
+  {
+    name: "AllOrigins/get",
+    type: "json",
+    build: (url) => `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`,
+    extract: (json) => json.contents,
+    note: "AllOrigins JSON endpoint"
+  },
+  {
+    name: "corsproxy.org",
+    type: "cors",
+    build: (url) => `https://corsproxy.org/?${encodeURIComponent(url)}`,
+    note: "Open CORS proxy"
+  },
+  {
+    name: "ThingProxy",
+    type: "cors",
+    build: (url) => `https://thingproxy.freeboard.io/fetch/${url}`,
+    note: "Freeboard ThingProxy"
+  },
+  {
+    name: "cors-proxy.htmldriven",
+    type: "json",
+    build: (url) => `https://cors-proxy.htmldriven.com/?url=${encodeURIComponent(url)}`,
+    extract: (json) => json.body,
+    note: "HTMLDriven CORS proxy"
+  },
+  {
+    name: "yacdn.org",
+    type: "cors",
+    build: (url) => `https://yacdn.org/proxy/${url}`,
+    note: "Yet Another CDN proxy"
+  },
+  {
+    name: "Direct Iframe",
+    type: "iframe",
+    build: (url) => url,
+    note: "Direct iframe load (some sites block)"
+  },
+  {
+    name: "Google Cache",
+    type: "iframe",
+    build: (url) => `https://webcache.googleusercontent.com/search?q=cache:${encodeURIComponent(url)}`,
+    note: "Google's cached version"
+  },
+  {
+    name: "Wayback Machine",
+    type: "iframe",
+    build: (url) => `https://web.archive.org/web/2024/${url}`,
+    note: "Internet Archive fallback"
+  }
+];
+
+// ─── STATE ───
+let history = [];
+let historyIndex = -1;
+let currentUrl = '';
+let isLoading = false;
+
+// ─── RENDER PROXY CHIPS ───
+function renderChips(states = {}) {
+  const container = document.getElementById('proxyChips');
+  container.innerHTML = PROXIES.map((p, i) => {
+    let cls = 'proxy-chip';
+    if (states[i] === 'trying') cls += ' trying';
+    else if (states[i] === 'success') cls += ' success';
+    else if (states[i] === 'failed') cls += ' failed';
+    return `<span class="${cls}" title="${p.note}">${p.name}</span>`;
+  }).join('');
+}
+renderChips();
+document.getElementById('proxyCountLabel').textContent = PROXIES.length;
+
+// ─── LOGGING ───
+function log(msg, type = 'info') {
+  const el = document.getElementById('logEntries');
+  const time = new Date().toLocaleTimeString();
+  el.innerHTML += `<div class="log-entry log-${type}">[${time}] ${msg}</div>`;
+  el.scrollTop = el.scrollHeight;
+}
+
+function clearLog() { document.getElementById('logEntries').innerHTML = ''; }
+function toggleLog() { document.getElementById('logPanel').classList.toggle('visible'); }
+
+// ─── STATUS ───
+function setStatus(text, state = 'ready') {
+  document.getElementById('statusText').textContent = text;
+  const dot = document.getElementById('statusDot');
+  dot.className = 'status-dot' + (state === 'loading' ? ' loading' : state === 'error' ? ' error' : '');
+}
+
+// ─── URL NORMALIZATION ───
+function normalizeUrl(input) {
+  input = input.trim();
+  if (!input) return '';
+  // If it looks like a URL
+  if (/^https?:\/\//i.test(input)) return input;
+  if (/^[a-zA-Z0-9][-a-zA-Z0-9]*\.[a-zA-Z]{2,}/.test(input)) return 'https://' + input;
+  // Otherwise treat as search
+  return 'https://www.google.com/search?q=' + encodeURIComponent(input);
+}
+
+// ─── RENDER HTML INTO IFRAME ───
+function renderHTML(html, baseUrl) {
+  const frame = document.getElementById('contentFrame');
+  const splash = document.getElementById('splashContainer');
+  splash.style.display = 'none';
+  frame.style.display = 'block';
+
+  // Inject base tag so relative URLs work
+  let base = '';
+  try {
+    const u = new URL(baseUrl);
+    base = `<base href="${u.origin}/" target="_blank">`;
+  } catch(e) {}
+
+  // Inject base into <head> or prepend
+  if (/<head[^>]*>/i.test(html)) {
+    html = html.replace(/<head([^>]*)>/i, `<head$1>${base}`);
+  } else {
+    html = base + html;
+  }
+
+  const blob = new Blob([html], {type: 'text/html'});
+  frame.src = URL.createObjectURL(blob);
+}
+
+// ─── LOAD VIA IFRAME ───
+function loadIframe(url) {
+  return new Promise((resolve, reject) => {
+    const frame = document.getElementById('contentFrame');
+    const splash = document.getElementById('splashContainer');
+    splash.style.display = 'none';
+    frame.style.display = 'block';
+    
+    const timeout = setTimeout(() => { resolve(true); }, 5000); // Assume loaded after 5s
+    frame.onload = () => { clearTimeout(timeout); resolve(true); };
+    frame.onerror = () => { clearTimeout(timeout); reject(new Error('Iframe failed')); };
+    frame.src = url;
+  });
+}
+
+// ─── CASCADE PROXY ATTEMPTS ───
+async function cascadeLoad(url) {
+  const startTime = Date.now();
+  const states = {};
+  isLoading = true;
+
+  document.getElementById('loadingOverlay').style.display = 'flex';
+  setStatus('Connecting...', 'loading');
+
+  for (let i = 0; i < PROXIES.length; i++) {
+    if (!isLoading) return; // cancelled
+
+    const proxy = PROXIES[i];
+    states[i] = 'trying';
+    renderChips(states);
+
+    document.getElementById('loadingProxy').textContent = proxy.name;
+    document.getElementById('loadingAttempt').textContent = `Attempt ${i+1} of ${PROXIES.length} — ${proxy.note}`;
+    log(`Trying ${proxy.name}: ${proxy.note}`, 'trying');
+
+    try {
+      const proxyUrl = proxy.build(url);
+
+      if (proxy.type === 'iframe') {
+        // Iframe-based proxy
+        await loadIframe(proxyUrl);
+        states[i] = 'success';
+        renderChips(states);
+        log(`✓ ${proxy.name} succeeded!`, 'success');
+        const elapsed = Date.now() - startTime;
+        document.getElementById('loadTime').textContent = `${elapsed}ms`;
+        document.getElementById('proxyUsed').textContent = `Via: ${proxy.name}`;
+        setStatus(`Loaded via ${proxy.name}`, 'ready');
+        document.getElementById('loadingOverlay').style.display = 'none';
+        isLoading = false;
+        return true;
+
+      } else if (proxy.type === 'json') {
+        // JSON response with HTML in a field
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 8000);
+        const res = await fetch(proxyUrl, { signal: controller.signal });
+        clearTimeout(timer);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        const html = proxy.extract(json);
+        if (!html || html.length < 50) throw new Error('Empty response');
+        renderHTML(html, url);
+        states[i] = 'success';
+        renderChips(states);
+        log(`✓ ${proxy.name} succeeded! (${html.length} bytes)`, 'success');
+        const elapsed = Date.now() - startTime;
+        document.getElementById('loadTime').textContent = `${elapsed}ms`;
+        document.getElementById('proxyUsed').textContent = `Via: ${proxy.name}`;
+        setStatus(`Loaded via ${proxy.name}`, 'ready');
+        document.getElementById('loadingOverlay').style.display = 'none';
+        isLoading = false;
+        return true;
+
+      } else {
+        // Standard CORS proxy (raw HTML response)
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 8000);
+        const res = await fetch(proxyUrl, { signal: controller.signal });
+        clearTimeout(timer);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const html = await res.text();
+        if (!html || html.length < 50) throw new Error('Empty response');
+        renderHTML(html, url);
+        states[i] = 'success';
+        renderChips(states);
+        log(`✓ ${proxy.name} succeeded! (${html.length} bytes)`, 'success');
+        const elapsed = Date.now() - startTime;
+        document.getElementById('loadTime').textContent = `${elapsed}ms`;
+        document.getElementById('proxyUsed').textContent = `Via: ${proxy.name}`;
+        setStatus(`Loaded via ${proxy.name}`, 'ready');
+        document.getElementById('loadingOverlay').style.display = 'none';
+        isLoading = false;
+        return true;
+      }
+
+    } catch (err) {
+      states[i] = 'failed';
+      renderChips(states);
+      log(`✗ ${proxy.name} failed: ${err.message}`, 'error');
+      continue;
+    }
+  }
+
+  // All proxies failed
+  log('All proxies exhausted. Could not load page.', 'error');
+  setStatus('All proxies failed', 'error');
+  document.getElementById('loadingOverlay').style.display = 'none';
+  document.getElementById('proxyUsed').textContent = 'All proxies failed';
+  isLoading = false;
+
+  // Show error in content area
+  const frame = document.getElementById('contentFrame');
+  const splash = document.getElementById('splashContainer');
+  splash.style.display = 'none';
+  frame.style.display = 'block';
+  const errorHTML = `<!DOCTYPE html><html><head><style>
+    body{background:#0a0a0f;color:#ff003c;font-family:'Courier New',monospace;display:flex;align-items:center;justify-content:center;height:100vh;text-align:center}
+    h1{font-size:24px;margin-bottom:10px} p{color:#666;font-size:14px;max-width:500px}
+  </style></head><body><div><h1>⚠ ALL PROXIES FAILED</h1><p>None of the ${PROXIES.length} proxy services could load <strong>${url}</strong>. The site may be blocking proxy access, or all services are currently down. Try again later or try a different URL.</p></div></body></html>`;
+  const blob = new Blob([errorHTML], {type:'text/html'});
+  frame.src = URL.createObjectURL(blob);
+  return false;
+}
+
+// ─── NAVIGATION ───
+function navigate() {
+  const input = document.getElementById('urlInput').value;
+  const url = normalizeUrl(input);
+  if (!url) return;
+  document.getElementById('urlInput').value = url;
+  currentUrl = url;
+
+  // Manage history
+  history = history.slice(0, historyIndex + 1);
+  history.push(url);
+  historyIndex = history.length - 1;
+
+  cascadeLoad(url);
+}
+
+function go(url) {
+  document.getElementById('urlInput').value = url;
+  navigate();
+}
+
+function goBack() {
+  if (historyIndex > 0) {
+    historyIndex--;
+    const url = history[historyIndex];
+    document.getElementById('urlInput').value = url;
+    currentUrl = url;
+    cascadeLoad(url);
+  }
+}
+
+function goForward() {
+  if (historyIndex < history.length - 1) {
+    historyIndex++;
+    const url = history[historyIndex];
+    document.getElementById('urlInput').value = url;
+    currentUrl = url;
+    cascadeLoad(url);
+  }
+}
+
+function reloadPage() {
+  if (currentUrl) cascadeLoad(currentUrl);
+}
+
+function goHome() {
+  isLoading = false;
+  currentUrl = '';
+  document.getElementById('urlInput').value = '';
+  document.getElementById('contentFrame').style.display = 'none';
+  document.getElementById('contentFrame').src = 'about:blank';
+  document.getElementById('splashContainer').style.display = 'block';
+  document.getElementById('loadingOverlay').style.display = 'none';
+  document.getElementById('loadTime').textContent = '';
+  document.getElementById('proxyUsed').textContent = 'No proxy active';
+  setStatus('Ready', 'ready');
+  renderChips();
+}
+
+
+
+// ─── KEYBOARD SHORTCUTS ───
+document.addEventListener('keydown', (e) => {
+  if (e.ctrlKey && e.key === 'l') { e.preventDefault(); document.getElementById('urlInput').focus(); document.getElementById('urlInput').select(); }
+  if (e.key === 'Escape') { goHome(); }
+});
+
+// Init log
+log('Elijah\'s Proxy V7 initialized', 'success');
+log(`${PROXIES.length} proxy services loaded and ready`, 'info');
+PROXIES.forEach((p, i) => log(`  [${i+1}] ${p.name} — ${p.note}`, 'info'));
+log('Type a URL and press Enter or click GO', 'info');
+</script>
+</body>
+</html>
