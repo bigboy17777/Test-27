@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Idle Superpowers (Proxied)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body, html { 
+            margin: 0; 
+            padding: 0; 
+            width: 100%; 
+            height: 100%; 
+            overflow: hidden; 
+            background-color: #000; 
+        }
+        #unity-container { 
+            width: 100%; 
+            height: 100%; 
+            position: relative; 
+        }
+        #unity-canvas { 
+            width: 100%; 
+            height: 100%; 
+            display: block; 
+            outline: none; 
+        }
+        .gradient-text { 
+            background-clip: text; 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+        }
+    </style>
+</head>
+<body>
+    <div id="unity-container">
+        <canvas id="unity-canvas"></canvas>
+        <div id="loading-ui" class="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 text-white font-sans z-50">
+            <h1 class="text-4xl font-black mb-6 tracking-wider bg-gradient-to-r from-blue-400 to-purple-500 gradient-text">IDLE SUPERPOWERS</h1>
+            <div class="w-72 h-3 bg-gray-800 rounded-full overflow-hidden shadow-inner border border-gray-700">
+                <div id="progress-bar" class="h-full bg-gradient-to-r from-blue-500 to-purple-600 w-0 transition-all duration-200"></div>
+            </div>
+            <p id="loading-text" class="mt-5 text-sm text-gray-400 animate-pulse font-medium tracking-wide">Initializing Proxy...</p>
+        </div>
+    </div>
+
+    <script>
+        // The game URL we are proxying
+        const targetUrl = "https://www.lutsgames.com/games/idle-superpowers/";
+        
+        // Using codetabs proxy to bypass CORS and blockages
+        const proxy = "https://api.codetabs.com/v1/proxy/?quest=";
+        
+        const buildUrl = proxy + targetUrl + "Build";
+        const loaderUrl = buildUrl + "/webbuild.loader.js";
+        
+        // Configure Unity to fetch all its assets via the proxy
+        const config = {
+            dataUrl: buildUrl + "/webbuild.data",
+            frameworkUrl: buildUrl + "/webbuild.framework.js",
+            codeUrl: buildUrl + "/webbuild.wasm",
+            streamingAssetsUrl: proxy + targetUrl + "StreamingAssets",
+            companyName: "lutsgames",
+            productName: "Idle Superpowers",
+            productVersion: "1.2.4",
+        };
+
+        const canvas = document.querySelector("#unity-canvas");
+        const loadingUi = document.querySelector("#loading-ui");
+        const progressBar = document.querySelector("#progress-bar");
+        const loadingText = document.querySelector("#loading-text");
+
+        // Handle canvas resizing for pixel-perfect rendering
+        function resizeCanvas() {
+            canvas.width = window.innerWidth * window.devicePixelRatio;
+            canvas.height = window.innerHeight * window.devicePixelRatio;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        loadingText.innerText = "Loading Game Engine...";
+
+        // Dynamically load the Unity WebGL loader via the proxy
+        const script = document.createElement("script");
+        script.src = loaderUrl;
+        
+        script.onload = () => {
+            loadingText.innerText = "Downloading Game Assets...";
+            
+            // createUnityInstance is defined in webbuild.loader.js
+            createUnityInstance(canvas, config, (progress) => {
+                progressBar.style.width = (100 * progress) + "%";
+                if (progress === 1) {
+                    loadingText.innerText = "Starting Game...";
+                }
+            }).then((unityInstance) => {
+                // Hide loading UI when game is ready
+                loadingUi.style.display = "none";
+            }).catch((message) => {
+                loadingText.innerText = "Failed to load game. Check console.";
+                loadingText.classList.remove('animate-pulse');
+                loadingText.classList.add('text-red-500');
+                console.error("Unity Error:", message);
+            });
+        };
+
+        script.onerror = () => {
+            loadingText.innerText = "Failed to load via proxy. It might be rate-limited.";
+            loadingText.classList.remove('animate-pulse');
+            loadingText.classList.add('text-red-500');
+        };
+
+        document.body.appendChild(script);
+    </script>
+</body>
+</html>
