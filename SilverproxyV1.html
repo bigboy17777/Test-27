@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Silver Proxy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1e 100%);
+        }
+        .glass {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(16px);
+        }
+        .silver-gradient {
+            background: linear-gradient(90deg, #c0c0c0, #e5e5e5, #c0c0c0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .input-focus {
+            transition: all 0.3s ease;
+        }
+        .input-focus:focus {
+            box-shadow: 0 0 0 4px rgba(163, 163, 163, 0.3);
+            border-color: #a3a3a3;
+        }
+        .game-card {
+            transition: all 0.3s ease;
+        }
+        .game-card:hover {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.5);
+        }
+    </style>
+</head>
+<body class="min-h-screen text-white">
+    <!-- Navbar -->
+    <nav class="fixed top-0 w-full border-b border-white/10 bg-black/70 backdrop-blur-xl z-50">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-gradient-to-br from-zinc-300 to-zinc-500 rounded-2xl flex items-center justify-center text-black font-bold text-2xl shadow-inner">S</div>
+                <h1 class="text-4xl font-bold tracking-tighter silver-gradient">silver</h1>
+            </div>
+            <div class="flex gap-8 text-sm font-medium">
+                <a href="#" class="hover:text-zinc-300 transition-colors">Proxy</a>
+                <a href="#" onclick="showSection('games')" class="hover:text-zinc-300 transition-colors">Games</a>
+                <a href="https://discord.gg/" target="_blank" class="hover:text-zinc-300 transition-colors">Discord</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="pt-24 pb-12 max-w-5xl mx-auto px-6">
+        <!-- Hero -->
+        <div class="text-center mb-12">
+            <h1 class="text-6xl md:text-7xl font-bold tracking-tighter mb-4 silver-gradient">
+                Silver Proxy
+            </h1>
+            <p class="text-zinc-400 text-xl">Clean. Fast. Beautifully Unblocked.</p>
+        </div>
+
+        <!-- URL Input -->
+        <div class="max-w-3xl mx-auto mb-16">
+            <div class="glass border border-white/10 rounded-3xl p-3 shadow-2xl">
+                <div class="flex items-center bg-zinc-950 rounded-3xl px-6 py-5">
+                    <i class="fa-solid fa-globe text-zinc-500 mr-4"></i>
+                    <input 
+                        type="text" 
+                        id="urlInput"
+                        placeholder="Enter URL or search..."
+                        class="input-focus bg-transparent flex-1 outline-none text-lg placeholder-zinc-500"
+                        onkeydown="if(event.key === 'Enter') go()">
+                    <button onclick="go()" 
+                            class="bg-white hover:bg-zinc-200 text-black font-semibold px-10 py-3 rounded-2xl transition-all active:scale-95">
+                        Go
+                    </button>
+                </div>
+            </div>
+            <p class="text-center text-xs text-zinc-500 mt-4">• Powered by advanced proxy technology • Mobile Optimized</p>
+        </div>
+
+        <!-- Games Section -->
+        <div id="gamesSection">
+            <h2 class="text-3xl font-bold text-center mb-8 text-zinc-100">Popular Games</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6" id="gamesGrid">
+                <!-- Games populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center text-zinc-500 text-sm py-8 border-t border-white/5">
+        Silver Proxy • Single-file • Made with style
+    </footer>
+
+    <!-- Proxy View (Hidden initially) -->
+    <div id="proxyView" class="hidden fixed inset-0 bg-black flex flex-col z-[100]">
+        <div class="h-14 bg-zinc-900 border-b border-zinc-700 flex items-center px-4 gap-3">
+            <button onclick="exitProxy()" 
+                    class="px-5 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-2xl text-sm font-medium transition-colors">
+                ← Exit
+            </button>
+            <div class="flex-1 mx-4">
+                <input id="addressBar" 
+                       class="w-full bg-zinc-800 text-sm border border-zinc-700 rounded-3xl px-5 py-2 focus:outline-none focus:border-zinc-500"
+                       readonly>
+            </div>
+            <button onclick="exitProxy()" class="text-zinc-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+        <iframe id="proxyFrame" class="flex-1 w-full border-none"></iframe>
+    </div>
+
+    <script>
+        // Tailwind script
+        tailwind.config = {
+            content: [],
+            theme: {
+                extend: {}
+            }
+        }
+
+        const games = [
+            { name: "1v1.LOL", url: "https://1v1.lol", img: "https://i.imgur.com/2v5tQ8Z.png" },
+            { name: "Slope", url: "https://slope-game.io", img: "https://i.imgur.com/8v5vL2k.jpeg" },
+            { name: "Geometry Dash", url: "https://geometrydash.io", img: "https://i.imgur.com/9vX8kL2.jpeg" },
+            { name: "Cookie Clicker", url: "https://orteil.dashnet.org/cookieclicker/", img: "https://i.imgur.com/5vX9pLq.png" },
+            { name: "Krunker.io", url: "https://krunker.io", img: "https://i.imgur.com/7kL9pQm.jpeg" },
+            { name: "Retro Bowl", url: "https://retrobowl.me", img: "https://i.imgur.com/3vX8kLm.jpeg" },
+            { name: "Minecraft 6x", url: "https://classroom6x.com/minecraft", img: "https://i.imgur.com/4vX9pL2.jpeg" },
+            { name: "Drive Mad", url: "https://drivemad.io", img: "https://i.imgur.com/6vX8kL9.jpeg" }
+        ]
+
+        function populateGames() {
+            const container = document.getElementById('gamesGrid')
+            container.innerHTML = games.map(game => `
+                <div onclick="launchGame('${game.url}')" 
+                     class="game-card bg-zinc-900 border border-white/10 rounded-3xl overflow-hidden cursor-pointer">
+                    <img src="${game.img}" class="w-full h-40 object-cover">
+                    <div class="p-4 text-center font-medium">${game.name}</div>
+                </div>
+            `).join('')
+        }
+
+        function go() {
+            let input = document.getElementById('urlInput').value.trim()
+            if (!input) return
+
+            if (!/^https?:\/\//i.test(input)) {
+                input = input.includes('.') ? 'https://' + input : 
+                       'https://www.google.com/search?q=' + encodeURIComponent(input)
+            }
+
+            launchProxy(input)
+        }
+
+        function launchGame(url) {
+            launchProxy(url)
+        }
+
+        function launchProxy(url) {
+            document.getElementById('proxyView').classList.remove('hidden')
+            document.getElementById('addressBar').value = url
+            
+            // Using corsproxy.io (best public CORS proxy currently)
+            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`
+            document.getElementById('proxyFrame').src = proxyUrl
+        }
+
+        function exitProxy() {
+            document.getElementById('proxyFrame').src = ''
+            document.getElementById('proxyView').classList.add('hidden')
+            document.getElementById('urlInput').focus()
+        }
+
+        function showSection(section) {
+            if (section === 'games') {
+                document.getElementById('gamesSection').scrollIntoView({ behavior: 'smooth' })
+            }
+        }
+
+        // Initialize
+        window.onload = () => {
+            populateGames()
+            document.getElementById('urlInput').focus()
+        }
+
+        // Keyboard shortcut to exit proxy (ESC)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === "Escape") {
+                const proxyView = document.getElementById('proxyView')
+                if (!proxyView.classList.contains('hidden')) {
+                    exitProxy()
+                }
+            }
+        })
+    </script>
+</body>
+</html>
