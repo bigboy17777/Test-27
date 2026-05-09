@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+
+<!-- Ultimate Game Stash file--> 
+<!-- For the regularly updating doc go to https://docs.google.com/document/d/1_FmH3BlSBQI7FGgAQL59-ZPe8eCxs35wel6JUyVaG8Q/ -->
+
+<html lang="en">
+  <base href="https://cdn.jsdelivr.net/gh/bubbls/UGS-Assets@main/tower-idle/">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22/>" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="description" content="Mage Tower Idle Defense" />
+    <meta name="game-version" content="48f762ca" />
+    <title>Mage Tower Idle Defense</title>
+    <script defer="defer" src="./static/js/main.a1d9a5b9.js"></script>
+    <link href="./static/css/main.2494f96b.css" rel="stylesheet" />
+    <script>
+      const config = {
+        "buildName": "magetower",
+        "name": "Mage Tower Idle Defense",
+        "version": "1.0.48f762ca",
+        "platform": "crazygames",
+        "unityGameConfig": {
+          "loaderScriptUrl": "./assets/MageTower.48f762ca.loader.js",
+          "dataUrl": "./assets/MageTower.48f762ca.data.br",
+          "frameworkUrl": "./assets/MageTower.48f762ca.framework.js",
+          "codeUrl": "./assets/MageTower.48f762ca.wasm.br",
+          "streamingAssetsUrl": "StreamingAssets",
+          "flags": ["no_sidepanel"]
+        },
+        "gaConfig": {
+          "gameKey": "36fe0172a4f84cf4b6ee0588120c66dc",
+          "secretKey": "7124ef5c99d5386dfa328f5ffb21cdceaa4fe101"
+        },
+        "videoConfig": [
+          { "placementId": "level_up_x3", "type": "rewarded"},
+          { "placementId": "iap_free_gem", "type": "rewarded"},
+          { "placementId": "game_end_souls", "type": "rewarded"},
+          { "placementId": "quest_refresh", "type": "rewarded"},
+          { "placementId": "game_start_click", "type": "interstitial"},
+          { "placementId": "main_menu_chest", "type": "rewarded"},
+          { "placementId": "gameplay_chest", "type": "rewarded"},
+          { "placementId": "boss_reroll", "type": "rewarded"},
+          { "placementId": "mining_pick", "type": "rewarded"},
+          { "placementId": "market_free_slot", "type": "rewarded"},
+          { "placementId": "event_free", "type": "rewarded"}
+        ],
+        "xsolla": {
+          "projectId": "295569",
+          "sandbox": false
+        }
+      }
+      window.gameConfig = config;
+    </script>
+
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Share+Tech+Mono&display=swap');
+
+      #pw-gate {
+        position: fixed; inset: 0; z-index: 99999;
+        background: #03080f;
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'Share Tech Mono', monospace;
+      }
+      #pw-gate::before {
+        content: ''; position: absolute; inset: 0;
+        background: repeating-linear-gradient(
+          0deg, transparent, transparent 2px,
+          rgba(30,120,255,0.025) 2px, rgba(30,120,255,0.025) 4px
+        );
+        pointer-events: none;
+      }
+      .pw-box {
+        position: relative; display: flex; flex-direction: column;
+        align-items: center; gap: 24px; padding: 52px 48px 44px;
+        border: 1px solid rgba(30,120,255,0.3);
+        background: rgba(3,15,35,0.92);
+        box-shadow: 0 0 70px rgba(30,120,255,0.1), inset 0 0 40px rgba(0,0,0,0.7);
+        animation: fadeIn 0.5s ease forwards;
+      }
+      .pw-box::before, .pw-box::after {
+        content: ''; position: absolute; width: 12px; height: 12px;
+        border-color: #1e78ff; border-style: solid;
+      }
+      .pw-box::before { top:-1px; left:-1px; border-width: 2px 0 0 2px; }
+      .pw-box::after  { bottom:-1px; right:-1px; border-width: 0 2px 2px 0; }
+      .pw-title {
+        font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 22px;
+        letter-spacing: 0.18em; color: #4da3ff;
+        text-shadow: 0 0 20px rgba(30,120,255,0.7);
+        text-transform: uppercase; text-align: center;
+      }
+      .pw-sub {
+        font-size: 11px; letter-spacing: 0.12em;
+        color: rgba(77,163,255,0.45); text-transform: uppercase; margin-top: -14px;
+      }
+      #pw-input {
+        width: 240px; box-sizing: border-box;
+        background: rgba(30,120,255,0.06); border: 1px solid rgba(30,120,255,0.4);
+        color: #4da3ff; font-family: 'Orbitron', sans-serif;
+        font-size: 20px; font-weight: 600; letter-spacing: 0.25em;
+        text-align: center; padding: 14px 16px; outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s; caret-color: #4da3ff;
+      }
+      #pw-input:focus { border-color: #4da3ff; box-shadow: 0 0 22px rgba(30,120,255,0.25); }
+      #pw-input.shake {
+        animation: shake 0.4s ease;
+        border-color: #ff3c5a; box-shadow: 0 0 22px rgba(255,60,90,0.35);
+      }
+      #pw-btn {
+        width: 240px; padding: 14px; background: transparent;
+        border: 1px solid #1e78ff; color: #4da3ff;
+        font-family: 'Orbitron', sans-serif; font-size: 12px;
+        font-weight: 600; letter-spacing: 0.25em; text-transform: uppercase;
+        cursor: pointer; transition: background 0.2s, box-shadow 0.2s;
+      }
+      #pw-btn:hover { background: rgba(30,120,255,0.12); box-shadow: 0 0 24px rgba(30,120,255,0.3); }
+      #pw-btn:active { background: rgba(30,120,255,0.22); }
+      #pw-msg {
+        font-size: 12px; letter-spacing: 0.1em; min​​​​​​​​​​​​​​​​
