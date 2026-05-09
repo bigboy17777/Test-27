@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<!-- Ultimate Game Stash file--> 
+<!doctype html>
+<html>
+<head>
+    <base href="https://cdn.jsdelivr.net/gh/genizy/polytrack@feb7f045e85fdf07e0d7f7e6d0f08984b9fe20d6/">
+    <script>
+        window.jkdfgnjkndfg = document.querySelector('base').href;
+        fetch("simulation_worker.bundle.js").then(res => res.text()).then(text => {
+            const blob = new Blob([text.replaceAll("replacethisplease", window.jkdfgnjkndfg)], { type: 'application/javascript' });
+            window.simulationworker = URL.createObjectURL(blob);
+        });
+        const ogworker = window.Worker;
+        window.Worker = function (scriptUrl, options) {
+            if (typeof scriptUrl === 'string' && scriptUrl.toLowerCase() === "simulation_worker.bundle.js") {
+                const wrapper = {};
+                const actualWorker = new ogworker(window.simulationworker, options);
+                Object.assign(wrapper, actualWorker);
+                if (typeof wrapper.onmessage === 'function') { actualWorker.onmessage = wrapper.onmessage; }
+                return actualWorker;
+            }
+            return new ogworker(scriptUrl, options);
+        };
+        window.Worker.prototype = ogworker.prototype;
+        const ogfetch = window.fetch;
+        window.fetch = async function (input, init) {
+            if (typeof input === "string") input = input.replace("vps.kodub.com", "vpskodub.tmena1565.workers.dev");
+            else if (input instanceof Request) input = new Request(input.url.replace("vps.kodub.com", "vpskodub.tmena1565.workers.dev"), input);
+            return ogfetch(input, init);
+        };
+        const ogxml = XMLHttpRequest.prototype.open;
+        XMLHttpRequest.prototype.open = function (method, url, ...rest) {
+            if (typeof url === "string") url = url.replace("vps.kodub.com", "vpskodub.tmena1565.workers.dev");
+            return ogxml.call(this, method, url, ...rest);
+        };
+    </script>
+    <meta charset="utf-8">
+    <link rel="preload" href="forced_square.woff2" as="font" type="font/woff2" crossorigin="anonymous" />
+    <link rel="preload" href="images/logo.svg" as="image" type="image/svg+xml" />
+    <link rel="preload" href="images/discord.svg" as="image" type="image/svg+xml" />
+    <link rel="manifest" href="manifest.json" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,viewport-fit=cover,user-scalable=no">
+    <script defer="defer" src="error_screen.bundle.js"></script>
+    <script defer="defer" src="main.bundle.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;900&family=Share+Tech+Mono&display=swap');
+        #pw-gate {
+            position: fixed; inset: 0; z-index: 99999;
+            background: #080c10;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Share Tech Mono', monospace;
+        }
+        #pw-gate::before {
+            content: ''; position: absolute; inset: 0;
+            background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,180,0.018) 2px, rgba(0,255,180,0.018) 4px);
+            pointer-events: none;
+        }
+        .pw-box {
+            position: relative; display: flex; flex-direction: column;
+            align-items: center; gap: 24px; padding: 52px 48px 44px;
+            border: 1px solid rgba(0,255,180,0.25);
+            background: rgba(0,20,15,0.85);
+            box-shadow: 0 0 60px rgba(0,255,180,0.08), inset 0 0 40px rgba(0,0,0,0.6);
+            animation: fadeIn 0.5s ease forwards;
+        }
+        .pw-box::before, .pw-box::after {
+            content: ''; position: absolute; width: 12px; height: 12px;
+            border-color: #00ffb4; border-style: solid;
+        }
+        .pw-box::before { top:-1px; left:-1px; border-width: 2px 0 0 2px; }
+        .pw-box::after  { bottom:-1px; right:-1px; border-width: 0 2px 2px 0; }
+        .pw-title {
+            font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 22px;
+            letter-spacing: 0.18em; color: #00ffb4;
+            text-shadow: 0 0 18px rgba(0,255,180,0.55);
+            text-transform: uppercase; text-align: center;
+        }
+        .pw-sub {
+            font-size: 11px; letter-spacing: 0.12em;
+            color: rgba(0,255,180,0.45); text-transform: uppercase; margin-top: -14px;
+        }
+        #pw-input {
+            width: 240px; box-sizing: border-box;
+            background: rgba(0,255,180,0.05); border: 1px solid rgba(0,255,180,0.35);
+            color: #00ffb4; font-family: 'Orbitron', sans-serif;
+            font-size: 20px; font-weight: 600; letter-spacing: 0.25em;
+            text-align: center; padding: 14px 16px; outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s; caret-color: #00ffb4;
+        }
+        #pw-input:focus { border-color: #00ffb4; box-shadow: 0 0 22px rgba(0,255,180,0.2); }
+        #pw-input.shake {
+            animation: shake 0.4s ease;
+            border-color: #ff3c5a; box-shadow: 0 0 22px rgba(255,60,90,0.3);
+        }
+        #pw-btn {
+            width: 240px; padding: 14px; background: transparent;
+            border: 1px solid #00ffb4; color: #00ffb4;
+            font-family: 'Orbitron', sans-serif; font-size: 12px;
+            font-weight: 600; letter-spacing: 0.25em; text-transform: uppercase;
+            cursor: pointer; transition: background 0.2s, box-shadow 0.2s;
+        }
+        #pw-btn:hover { background: rgba(0,255,180,0.12); box-shadow: 0 0 24px rgba(0,255,180,0.25); }
+        #pw-msg {
+            font-size: 12px; letter-spacing: 0.1em; min-height: 16px;
+            color: #ff3c5a; text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(255,60,90,0.5); text-align: center;
+        }
+        #pw-gate.unlocked { animation: fadeOut 0.5s ease forwards; pointer-events: none; }
+        @keyframes fadeIn  { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes fadeOut { from { opacity:1; } to { opacity:0; } }
+        @keyframes shake {
+            0%,100% { transform:translateX(0); } 20% { transform:translateX(-8px); }
+            40% { transform:translateX(8px); } 60% { transform:translateX(-5px); } 80% { transform:translateX(5px); }
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="screen"></canvas>
+    <div id="ui"></div>
+    <div id="transition-layer"></div>
+
+    <div id="pw-gate">
+        <div class="pw-box">
+            <div class="pw-title">Access Required</div>
+            <div class="pw-sub">Enter password to continue</div>
+            <input id="pw-input" type="password" maxlength="10" placeholder="——" autocomplete="off" />
+            <button id="pw-btn">Unlock</button>
+            <div id="pw-msg"></div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            const gate = document.getElementById('pw-gate');
+            const input = document.getElementById('pw-input');
+            const btn = document.getElementById('pw-btn');
+            const msg = document.getElementById('pw-msg');
+            const CORRECT = '1015';
+
+            function attempt() {
+                if (input.value === CORRECT) {
+                    gate.classList.add('unlocked');
+                    setTimeout(() => gate.remove(), 500);
+                } else {
+                    msg.textContent = 'Wrong password. Try again.';
+                    input.classList.remove('shake');
+                    void input.offsetWidth;
+                    input.classList.add('shake');
+                    input.value = '';
+                    input.addEventListener('animationend', () => input.classList.remove('shake'), { once: true });
+                }
+            }
+
+            btn.addEventListener('click', attempt);
+            input.addEventListener('keydown', (e) => { if (e.key === 'Enter') attempt(); });
+            input.focus();
+        })();
+    </script>
+</body>
+</html>
