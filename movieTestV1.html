@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+    <title id="siteTitle">NikeStream</title>
+    <link id="siteIcon" rel="icon" href="https://www.google.com/favicon.ico" type="image/x-icon">
+    
+    <style>
+@import url('https://fonts.googleapis.com/css2?family=Parkinsans:wght@300..800&display=swap');:root{--bg:#050505;--surface:#111111;--accent:#ffffff;--accent-muted:#737373;--border:rgba(255, 255, 255, 0.08);--transition:all 0.4s cubic-bezier(0.2, 0, 0, 1)}*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Parkinsans', sans-serif;background-color:var(--bg);color:#fff;overflow-x:hidden;-webkit-font-smoothing:antialiased}header{position:fixed;top:0;width:100%;height:70px;background:rgba(5,5,5,0.8);backdrop-filter: blur(15px);display:flex;align-items:center;justify-content:space-between;padding:0 5%;z-index:1000;border-bottom:1px solid var(--border)}.logo{font-size:1.2rem;font-weight:800;letter-spacing:-1px;text-transform:uppercase}.settings-btn{background:var(--border);border:1px solid transparent;color:white;padding:8px 16px;border-radius:8px;font-size:12px;cursor:pointer;transition:var(--transition);font-family:inherit;font-weight:600}.settings-btn:hover{background:#fff;color:#000}.hero{height:65vh;width:100%;position:relative;display:flex;align-items:flex-end;padding:0 5% 60px;background-size:cover;background-position:center;transition:0.5s ease-in-out}.hero::after{content:'';position:absolute;inset:0;background:linear-gradient(0deg, var(--bg) 5%, transparent 100%)}.hero-content{position:relative;z-index:2;max-width:650px}.hero-title{font-size:3.5rem;font-weight:800;margin-bottom:10px;line-height:1;letter-spacing:-2px}.hero-desc{color:var(--accent-muted);font-size:0.95rem;margin-bottom:20px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.search-container{padding:40px 5%;display:flex;justify-content:center;position:relative;z-index:10;margin-top:-40px}.search-bar{width:100%;max-width:700px;background:#151515;border:1px solid var(--border);padding:18px 25px;border-radius:14px;color:white;font-family:inherit;font-size:1rem;outline:none;transition:var(--transition)}.search-bar:focus{border-color:#fff;background:#1a1a1a;transform:translateY(-2px)}.grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));gap:30px;padding:0 5% 100px}.card{background:var(--surface);border-radius:16px;overflow:hidden;position:relative;aspect-ratio:2/3;cursor:pointer;transition:var(--transition);border:1px solid var(--border)}.card:hover{transform:scale(1.03);border-color:rgba(255,255,255,0.3);z-index:5}.card img{width:100%;height:100%;object-fit:cover}.card-info{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:20px;background:linear-gradient(transparent, rgba(0,0,0,0.8));opacity:0;transition:0.3s}.card:hover .card-info{opacity:1}.modal{position:fixed;inset:0;background:rgba(0,0,0,0.95);backdrop-filter: blur(20px);display:none;justify-content:center;align-items:center;z-index:2000;padding:20px}.modal.active{display:flex;animation:modalFade 0.4s ease}.modal-content{background:#0a0a0a;padding:40px;border-radius:24px;border:1px solid var(--border);max-width:500px;width:100%;position:relative}.server-select{background:#1a1a1a;color:#fff;border:1px solid var(--border);padding:12px 20px;border-radius:10px;width:100%;margin-bottom:15px;font-family:inherit;outline:none}.close{position:absolute;top:25px;right:25px;cursor:pointer;font-size:22px;opacity:0.5;transition:0.2s}.close:hover{opacity:1;transform:rotate(90deg)}@keyframes modalFade{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}@media (max-width: 768px){.hero-title{font-size:2.2rem}.grid{grid-template-columns:repeat(auto-fill, minmax(150px, 1fr))}}
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">nikestream</div>
+        <div class="nav-tools">
+            <button class="settings-btn" onclick="openModal('settingsModal')">Preferences</button>
+        </div>
+    </header>
+
+    <div id="hero" class="hero">
+        <div class="hero-content">
+            <h1 id="heroTitle" class="hero-title">--</h1>
+            <p id="heroDesc" class="hero-desc">--</p>
+            <button class="settings-btn" style="padding: 12px 25px; font-weight: 700; background: #fff; color: #000;">Trending Today</button>
+        </div>
+    </div>
+
+    <div class="search-container">
+        <input type="text" id="searchInput" class="search-bar" placeholder="Search the library..." oninput="handleSearch()">
+    </div>
+
+    <main id="library" class="grid"></main>
+
+    <div style="text-align: center; padding: 60px;">
+        <button class="settings-btn" style="padding: 15px 40px; font-size: 14px;" onclick="fetchNextBatch()">Load More Titles</button>
+    </div>
+
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="close" onclick="closeModal('settingsModal')">✕</div>
+            <h2 style="margin-bottom: 10px; font-weight: 800;">Settings</h2>
+            <p style="font-size: 13px; color: var(--accent-muted); margin-bottom: 25px;">Privacy and UI options.</p>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button class="settings-btn" onclick="cloakTab('Google Drive', 'https://ssl.gstatic.com/docs/doclist/images/drive_2022q3_32dp.png')">Cloak as Google Drive</button>
+                <button class="settings-btn" onclick="cloakTab('NikeStream', 'https://securly.pages.dev/favicon.png')">Reset Identity</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="serverModal" class="modal">
+        <div class="modal-content">
+            <div class="close" onclick="closeModal('serverModal')">✕</div>
+            <h2 id="mediaTitle" style="margin-bottom: 20px; font-weight: 800;">Select Server</h2>
+            
+            <div id="tvSelectors" style="display: none; gap: 10px; margin-bottom: 15px;">
+                <select id="seasonSelect" onchange="fetchEpisodes()" style="flex: 1; background:#1a1a1a; color:#fff; border:1px solid var(--border); padding:12px; border-radius:10px; font-family: inherit;"></select>
+                <select id="episodeSelect" style="flex: 1; background:#1a1a1a; color:#fff; border:1px solid var(--border); padding:12px; border-radius:10px; font-family: inherit;"></select>
+            </div>
+
+            <select id="serverSelect" class="server-select">
+                <option value="nike">NikeStream Worker (High Speed)</option>
+            </select>
+            
+            <button class="settings-btn" style="width: 100%; padding: 18px; background: #fff; color: #000; font-weight: 800; font-size: 14px;" onclick="handleLaunch()">Launch Media</button>
+        </div>
+    </div>
+
+    <script>
+const API_KEY='f1e91ad0cfd485271785971f8117ec74';const BASE_URL='https://api.themoviedb.org/3';const IMG_URL='https://image.tmdb.org/t/p/w1280';const POSTER_URL='https://image.tmdb.org/t/p/w500';let currentPage=1,isSearching=false,currentItem={};function cloakTab(title,favicon){document.title=title;document.getElementById('siteIcon').href=favicon;localStorage.setItem('cloakTitle',title);localStorage.setItem('cloakIcon',favicon)}async function fetchNextBatch(){if(isSearching){return}const res=await fetch(`${ BASE_URL }/trending/all/week?api_key=${ API_KEY }&page=${ currentPage }`);const data=await res.json();if(currentPage===1&&data.results[0]){const top=data.results[0];document.getElementById('hero').style.backgroundImage=`url(${ IMG_URL }${top.backdrop_path })`;document.getElementById('heroTitle').innerText=top.title||top.name;document.getElementById('heroDesc').innerText=top.overview}renderItems(data.results,false);currentPage+=1}function handleSearch(){const query=document.getElementById('searchInput').value.trim();if(!query){isSearching=false;document.getElementById('library').innerHTML="";currentPage=1;fetchNextBatch();return}clearTimeout(window.searchTimer);window.searchTimer=setTimeout(async()=>{isSearching=true;const res=await fetch(`${ BASE_URL }/search/multi?api_key=${ API_KEY }&query=${encodeURIComponent(query)}`);const data=await res.json();renderItems(data.results,true)},500)}function renderItems(items,clear){const container=document.getElementById('library');if(clear){container.innerHTML=""}items.forEach(item=>{if(!item.poster_path||item.media_type==='person'){return}const title=item.title||item.name;const year=(item.release_date||item.first_air_date||"").split('-')[0];const isTV=item.media_type==='tv'||(item.first_air_date&&!item.release_date);const card=document.createElement('div');card.className='card';card.innerHTML=`
+                    <img src="${ POSTER_URL }${item.poster_path }" alt="${ title }" loading="lazy" crossorigin="anonymous">
+                    <div class="card-info">
+                        <div style="font-weight: 700; font-size: 16px; margin-bottom: 5px;">${ title }</div>
+                        <div style="font-size: 12px; color: var(--accent-muted); letter-spacing: 1px;">${ year } • ${isTV?'TV SHOW':'MOVIE'}</div>
+                    </div>
+                `;card.onclick=()=>openServerModal(item);container.appendChild(card)})}async function openServerModal(item){currentItem=item;const isTV=item.media_type==='tv'||(item.first_air_date&&!item.release_date);document.getElementById('mediaTitle').innerText=item.title||item.name;document.getElementById('tvSelectors').style.display=isTV?'flex':'none';if(isTV){const res=await fetch(`${ BASE_URL }/tv/${item.id }?api_key=${ API_KEY }`);const data=await res.json();document.getElementById('seasonSelect').innerHTML=data.seasons.filter(s=>s.season_number>0).map(s=>`<option value="${s.season_number }">Season ${s.season_number }</option>`).join('');await fetchEpisodes()}openModal('serverModal')}async function fetchEpisodes(){const sNum=document.getElementById('seasonSelect').value;const res=await fetch(`${ BASE_URL }/tv/${currentItem.id }/season/${ sNum }?api_key=${ API_KEY }`);const data=await res.json();document.getElementById('episodeSelect').innerHTML=data.episodes.map(e=>`<option value="${e.episode_number }">Episode ${e.episode_number }</option>`).join('')}function handleLaunch(){const id=currentItem.id;let finalUrl="";const isTV=currentItem.media_type==='tv'||(currentItem.first_air_date&&!currentItem.release_date);if(isTV){const s=document.getElementById('seasonSelect').value;finalUrl=`https://movies.niketeam.workers.dev/embedtv/${ id }&s=${ s }&e=${ e }`}else{finalUrl=`https://movies.niketeam.workers.dev/embed/${ id }`}window.location.href=finalUrl}function openModal(id){document.getElementById(id).classList.add('active');document.body.style.overflow='hidden'}function closeModal(id){document.getElementById(id).classList.remove('active');document.body.style.overflow='auto'}window.onload=()=>{fetchNextBatch();const savedTitle=localStorage.getItem('cloakTitle');const savedIcon=localStorage.getItem('cloakIcon');if(savedTitle){cloakTab(savedTitle,savedIcon)}}
+    </script>
+</body>
+</html>
